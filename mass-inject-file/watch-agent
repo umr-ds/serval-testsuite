@@ -1,0 +1,26 @@
+#!/bin/sh
+
+TIMEOUT_S="60"
+LATER=$((`date +%s` + $TIMEOUT_S))
+HOSTNAME=`hostname`
+
+while [ true ]; do
+    # Check if servald is running
+    if [ $(ps aux | grep "servald start" | grep -v grep | wc -l) -lt 1 ]; then 
+        echo "Serval crashed on $HOSTNAME" >&2
+        exit 1
+    fi
+    
+    # Check if test timed out
+    if [ "$LATER" -lt `date +%s` ]; then
+        echo "Timeout on $HOSTNAME" >&2
+        exit 2
+    fi
+        
+    # Check if condition is reached
+    if [ $(servald rhizome list | wc -l) -eq 5 ]; then
+        exit 0
+    fi
+    
+    sleep 1
+done

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+HOSTNAME=`hostname`
+TESTFILE_PATH="/tmp/serval-testfiles/$HOSTNAME"
+mkdir -p $TESTFILE_PATH
+
+echo "Generating files on $HOSTNAME: "
+dd if=/dev/urandom of=$TESTFILE_PATH/64k.file bs=1K count=64
+dd if=/dev/urandom of=$TESTFILE_PATH/256k.file bs=1K count=256
+dd if=/dev/urandom of=$TESTFILE_PATH/512k.file bs=1K count=512
