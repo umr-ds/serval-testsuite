@@ -1,0 +1,16 @@
+#!/bin/sh
+
+case $1 in
+    '' | *[!0-9]*)
+        NUMBER_OF_MESSAGES=5;;
+    *)
+        NUMBER_OF_MESSAGES=$1;;
+esac
+
+echo Number of messages $NUMBER_OF_MESSAGES
+
+while [ $NUMBER_OF_MESSAGES -gt 0 ]
+do
+    /home/meshadmin/serval-tests/meshms-hello-everybody
+    NUMBER_OF_MESSAGES=$(($NUMBER_OF_MESSAGES-1))
+done
