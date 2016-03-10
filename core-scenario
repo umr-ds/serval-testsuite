@@ -25,7 +25,13 @@ else
     done
 fi
 
-# Prepare active nodes
+# Variables for background jobs
+FAIL="0"
+PIDS=""
+
+
+
+### PHASE 1
 echo -e "\e[1;34mPhase 1 - Prepare:\e[0m"
 
 PREPARE=`readlink -e $1/prepare`
@@ -34,14 +40,24 @@ for node in $ACTIVE_NODES; do
 done
 
 
+
+### PHASE 2
 echo -n -e "\e[1;34mPhase 2 - Starting system monitoring\e[0m"
 for node in $ALL_NODES; do
-    vcmd -c $node -- sh -c "/home/meshadmin/serval-tests/monitor system"
+    vcmd -c $node -- sh -c "/home/meshadmin/serval-tests/monitor system" &
+    PIDS="$PIDS $!"
+done
+for PID in $PIDS; do
+    wait $PID || let "FAIL=$?"
     printf .
+    if [ "$FAIL" != "0" ]; then echo "\e[1;31mPhase 2: monitor $PID failed with $FAIL, aborting scenario.\e[0m"; exit 2; fi
 done
 echo
+PIDS=""
 
 
+
+### PHASE 3
 echo -n -e "\e[1;34mPhase 3 - Starting servald\e[0m"
 for node in $ALL_NODES; do
     vcmd -c $node -- sh -c "servald start > /dev/null"
@@ -54,16 +70,27 @@ done
 echo
 
 
+
+### PHASE 4
 echo -n -e "\e[1;34mPhase 4 - Starting servald monitoring\e[0m"
 for node in $ALL_NODES; do
-    vcmd -c $node -- sh -c "/home/meshadmin/serval-tests/monitor serval"
+    vcmd -c $node -- sh -c "/home/meshadmin/serval-tests/monitor serval" &
+    PIDS="$PIDS $!"
+done
+for PID in $PIDS; do
+    wait $PID || let "FAIL=$?"
     printf .
+    if [ "$FAIL" != "0" ]; then echo "\e[1;31mPhase 4: monitor $PID failed with $FAIL, aborting scenario.\e[0m"; exit 4; fi
 done
 echo
+PIDS=""
 
+
+
+
+### PHASE 5
 # using trap to kill running vcmds
 trap "kill $AGENTS 2> /dev/null; echo Killed agents; exit" SIGINT SIGTERM
-
 
 echo -n -e "\e[1;34mPhase 5 - Starting watch-agents:\e[0m"
 PREPARE=`readlink -e $1/watch-agent`
@@ -75,6 +102,9 @@ done
 echo
 
 
+
+
+### PHASE 6
 echo -e "\e[1;34mPhase 6 - Initiating Scenario:\e[0m"
 INIT=`readlink -e $1/initiate`
 for node in $ACTIVE_NODES; do
@@ -82,6 +112,9 @@ for node in $ACTIVE_NODES; do
 done
 
 
+
+
+### PHASE 7
 echo -n -e "\e[1;34mPhase 7 - Waiting for agents\e[0m"
 FAIL="0"
 for PID in $AGENTS; do
@@ -90,7 +123,6 @@ for PID in $AGENTS; do
     if [ "$FAIL" != "0" ]; then break; fi
 done
 echo
-
 
 if [ "$FAIL" == "0" ]; then
     echo -n -e "\e[1;32mPhase 7: watch-agents finished, sleeping 3 seconds to have a trailer in monitoring\e[0m"
@@ -103,6 +135,9 @@ else
 fi
 
 
+
+
+### PHASE 8
 echo -n -e "\e[1;34mPhase 8 - Teardown\e[0m"
 for node in $ALL_NODES; do
     vcmd -c $node -- sh -c "/home/meshadmin/serval-tests/monitor stop"
@@ -112,6 +147,9 @@ done
 echo
 
 
+
+
+### PHASE 9
 echo -e "\e[1;34mPhase 9 - Data Collection: no data collection needed, check /tmp/serval-monitor\e[0m"
 echo
 
