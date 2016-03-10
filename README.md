@@ -20,8 +20,9 @@ The phases 1,5 and 6 *must* be configured per scenario. This is done via shell s
 The **watch-agent** is executed on *every* node and should exit using the following return codes:
 
 - ```0``` exit condition reached
-- ```1``` servald crashed
-- ```2``` timeout reached
+- ```1``` agent script crashed
+- ```2``` servald crashed
+- ```3``` timeout reached
 - ```...``` your return code here
 
 This way the operator is able to debug the scenario. It's also possible to write to stdout for all three scripts.

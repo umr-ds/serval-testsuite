@@ -25,6 +25,12 @@ else
     done
 fi
 
+echo -e "\e[1;32mRunning Scenario $1"
+echo -n -e "  Using CORE Nodes "
+for NODE in ${ALL_NODES}; do printf "`basename $NODE` "; done; echo
+echo -n -e "  Active CORE Nodes "
+for NODE in ${ACTIVE_NODES}; do printf `basename $NODE`; done; echo -e "\e[0m"
+
 # Variables for background jobs
 FAIL="0"
 PIDS=""
@@ -50,7 +56,7 @@ done
 for PID in $PIDS; do
     wait $PID || let "FAIL=$?"
     printf .
-    if [ "$FAIL" != "0" ]; then echo "\e[1;31mPhase 2: monitor $PID failed with $FAIL, aborting scenario.\e[0m"; exit 2; fi
+    if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPhase 2: monitor $PID failed with $FAIL, aborting scenario.\e[0m"; exit 2; fi
 done
 echo
 PIDS=""
@@ -60,7 +66,20 @@ PIDS=""
 ### PHASE 3
 echo -n -e "\e[1;34mPhase 3 - Starting servald\e[0m"
 for node in $ALL_NODES; do
-    vcmd -c $node -- sh -c "servald start > /dev/null"
+    vcmd -c $node -- sh -c "servald start > /dev/null" &
+    PIDS="$PIDS $!"
+done
+for PID in $PIDS; do
+    wait $PID || let "FAIL=$?"
+    printf .
+    if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPhase 3: serval $PID failed with $FAIL, aborting scenario.\e[0m"; exit 2; fi
+done
+echo
+PIDS=""
+
+
+echo -n -e "\e[1;34mPhase 3.5 - Scanning for servald instances\e[0m"
+for node in $ALL_NODES; do
     vcmd -c $node -- bash -c '''
         for i in `ifconfig | grep "inet addr:10." | cut -d":" -f 2 | cut -d"." -f1,2,3`; do
             servald scan $i.255 > /dev/null
