@@ -4,7 +4,7 @@
 Each test consists of seven phases:
  
  1. **prepare** (active nodes)
- 2. start system monitoring (**TODO**)
+ 2. start system monitoring
  3. start servald
  4. start servald monitoring
  5. start **watch-agent**s

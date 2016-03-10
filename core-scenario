@@ -33,7 +33,14 @@ for node in $ACTIVE_NODES; do
     vcmd -c $node -- $PREPARE
 done
 
-# Starting servald independent logs (MISSING!)
+
+echo -n -e "\e[1;34mPhase 2 - Starting system monitoring\e[0m"
+for node in $ALL_NODES; do
+    vcmd -c $node -- sh -c "/home/meshadmin/serval-tests/monitor system"
+    printf .
+done
+echo
+
 
 echo -n -e "\e[1;34mPhase 3 - Starting servald\e[0m"
 for node in $ALL_NODES; do
@@ -49,7 +56,7 @@ echo
 
 echo -n -e "\e[1;34mPhase 4 - Starting servald monitoring\e[0m"
 for node in $ALL_NODES; do
-    vcmd -c $node -- sh -c "/home/meshadmin/serval-tests/monitor start"
+    vcmd -c $node -- sh -c "/home/meshadmin/serval-tests/monitor serval"
     printf .
 done
 echo
