@@ -1,4 +1,4 @@
 #!/bin/sh
 
-TESTFILE_PATH="/tmp/serval-testfiles/$(hostname)"
+TESTFILE_PATH="/tmp/serval-testfiles"
 /home/meshadmin/serval-tests/rhizome-add-testfiles $TESTFILE_PATH > /dev/null
