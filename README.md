@@ -2,7 +2,7 @@
 
 ## Architecture
 Each test consists of seven phases:
- 
+
  1. **prepare** (active nodes)
  2. start system monitoring
  3. start servald
@@ -58,3 +58,15 @@ The core nodes do need some files in place:
 
  - **/home/meshadmin/serval-tests/\***
  - **servald**
+
+### Setup Scenario
+
+New directory is the scenario name
+Three files are needed:
+* **prepare** - is done right after the start before anything else
+* **watch-agent** - is used to monitor for results
+* **initiate** - triggers the test itself
+
+All scripts get as 1st parameter the number of nodes.
+
+The second parameter ist the one supplied by the user through ```core-scenario```.

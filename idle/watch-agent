@@ -20,7 +20,7 @@ while [ true ]; do
     fi
 
     # Check if condition is reached
-    if [ $(servald peer count) -eq $1 ]; then
+    if [ $(servald peer count) -eq `expr $1 - 1` ]; then
         exit 0
     fi
 

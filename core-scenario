@@ -15,6 +15,7 @@ fi
 
 # Gathering Nodes
 ALL_NODES=`find /tmp/ 2>/dev/null | grep pycore.*/n[0-9]*$`
+NUM_ALL_NODES=`find /tmp/ 2>/dev/null | grep pycore.*/n[0-9]*$ | wc -l`
 if [ "$ALL_NODES" == "" ]; then
     echo -e "\e[1;31mError: Couldn't find any core nodes\e[0m"
     exit 1
@@ -45,7 +46,7 @@ echo -e "\e[1;34mPhase 1 - Prepare: $1/initiate $2\e[0m"
 
 PREPARE=`readlink -e $1/prepare`
 for node in $ACTIVE_NODES; do
-    vcmd -c $node -- sh -c "$PREPARE $2"
+    vcmd -c $node -- sh -c "$PREPARE $NUM_ALL_NODES $2"
 done
 
 
@@ -117,7 +118,7 @@ trap "kill $AGENTS 2> /dev/null; echo Killed agents; exit" SIGINT SIGTERM
 echo -n -e "\e[1;34mPhase 5 - Starting watch-agents: $1/watch-agent $3\e[0m"
 PREPARE=`readlink -e $1/watch-agent`
 for node in $ALL_NODES; do
-    vcmd -c $node -- sh -c "$PREPARE $3" &
+    vcmd -c $node -- sh -c "$PREPARE $NUM_ALL_NODES $3" &
     AGENTS="$AGENTS $!"
     printf .
 done
@@ -130,7 +131,7 @@ echo
 echo -e "\e[1;34mPhase 6 - Initiating Scenario: $1/initiate $4\e[0m"
 INIT=`readlink -e $1/initiate`
 for node in $ACTIVE_NODES; do
-    vcmd -c $node -- sh -c "$INIT $3"
+    vcmd -c $node -- sh -c "$INIT $NUM_ALL_NODES $3"
 done
 
 

@@ -6,26 +6,26 @@ HOSTNAME=`hostname`
 SID=$(servald id self | tail -n 1)
 NUMBER_OF_HEADER_LINES=2
 
-case $1 in
+case $2 in
     '' | *[!0-9]*)
         NUMBER_OF_MESSAGES=5;;
     *)
-        NUMBER_OF_MESSAGES=$1;;
+        NUMBER_OF_MESSAGES=$2;;
 esac
 
 while [ true ]; do
     # Check if servald is running
-    if [ $(ps aux | grep "servald start" | grep -v grep | wc -l) -lt 1 ]; then 
+    if [ $(ps aux | grep "servald start" | grep -v grep | wc -l) -lt 1 ]; then
         echo "Serval crashed on $HOSTNAME" >&2
         exit 1
     fi
-    
+
     # Check if test timed out
     if [ "$LATER" -lt `date +%s` ]; then
         echo "Timeout on $HOSTNAME" >&2
         exit 2
     fi
-        
+
     # Check if node received the messages from the active node
     if [ $(servald meshms list conversations $SID | wc -l) -eq 3 ]; then
         # Get SID of active node
@@ -35,6 +35,6 @@ while [ true ]; do
             exit 0
         fi
     fi
-    
+
     sleep 1
 done
