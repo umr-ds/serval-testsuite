@@ -2,6 +2,9 @@
 if [ "$1" = "-h" ] || [ "$#" -lt 2 ]; then
     echo "usage: $0 scenario p w i [n1 ... | -a ]"
     echo "starts a scenario with prepare/initiate at all given nodes"
+    echo "       params for scripts: p - preparations"
+    echo "       params for scripts: w - watch-agents"
+    echo "       params for scripts: i - initialization"
 fi
 
 # test if scenario is available

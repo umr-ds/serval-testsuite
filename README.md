@@ -33,8 +33,11 @@ This way the operator is able to debug the scenario. It's also possible to write
 To run a scenario use the **core-gui** to start it and then use **core-scenario** to start the scenario:
 
 ```bash
-usage: $0 scenario [n1 ... | -a ]
+usage: $0 scenario p w i [n1 ... | -a ]
 starts a scenario with prepare/initiate at all given nodes
+       params for scripts: p - preparations
+       params for scripts: w - watch-agents
+       params for scripts: i - initialization
 ```
 
 Example: ```$ ./core-scenario mass-inject-file n1```
