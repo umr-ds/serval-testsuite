@@ -50,7 +50,8 @@ Example: ```$ ./core-scenario mass-inject-file n1```
 * **core-get-sids** - writes SIDs from all core nodes to $SEVERAL_ALL_SIDS_FILE
 * **core-parallel-all** - executes a command parallel on every core node
 * **core-watch-serval** - watches servald on every core node, and tells if one crashed
-* **show-log** - should be run from main host, opens log of given node name in less for viewing or if -n is appended just outputs the absolute log file path (e.g. $ show-log n12 )
+* **show-log** - should be run from main host, opens log of given node name in less for viewing or if _-n_ is appended just outputs the absolute log file path (e.g. ```$ show-log n12 ```)
+* **check-crash** - checks all running core nodes under /tmp for logs containing crash information. These can be displayed using _show-log_
 
 ### Requirements
 
