@@ -27,20 +27,19 @@ The **watch-agent** is executed on *every* node and should exit using the follow
 
 This way the operator is able to debug the scenario. It's also possible to write to stdout for all three scripts.
 
-## CORE Related:
-### Invoke Scenario
+## Invoke Scenario
 
-To run a scenario use the **core-gui** to start it and then use **core-scenario** to start the scenario:
+To run a scenario use the **core-gui** or **MiniWorld** to start it and then use **scenario** to start the scenario:
 
 ```bash
-usage: $0 scenario p w i [n1 ... | -a ]
+usage: $0 scenario (core | miniworld) p w i [0 ... | -a ]
 starts a scenario with prepare/initiate at all given nodes
        params for scripts: p - preparations
        params for scripts: w - watch-agents
-       params for scripts: i - initialization
+       params for scripts: i - initiate
 ```
 
-Example: ```$ ./core-scenario mass-inject-file n1```
+Example: ```$ ./scenario core mass-inject-file 0```
 
 
 
@@ -64,10 +63,13 @@ The core nodes do need some files in place:
 
 New directory is the scenario name
 Three files are needed:
+
 * **prepare** - is done right after the start before anything else
 * **watch-agent** - is used to monitor for results
 * **initiate** - triggers the test itself
 
-All scripts get as 1st parameter the number of nodes.
+All scripts get these parameters when executed:
 
-The second parameter ist the one supplied by the user through ```core-scenario```.
+ * $1: Number of nodes in the scenario 
+ * $2: Number of *active* nodes
+ * $3...: User specified in **p, w or i** 

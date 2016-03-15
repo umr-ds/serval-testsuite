@@ -1,0 +1,234 @@
+#! /bin/bash
+if [ "$1" = "-h" ] || [ "$#" -lt 3 ]; then
+    echo "usage: $0 (core | miniworld) scenario p w i [0 ... | -a ]"
+    echo "starts a scenario with prepare/initiate at all given nodes"
+    echo "       params for scripts: p - preparations"
+    echo "       params for scripts: w - watch-agents"
+    echo "       params for scripts: i - initiate"
+fi
+
+TYPE=$1
+SCENARIO=$2
+SCENARIO_FOLDER=`readlink -e $SCENARIO`
+PREP_ARGS=$3
+WATCH_ARGS=$4
+INIT_ARGS=$5
+ACTIVE_NODES=${@:6}
+
+
+# test if scenario is available
+if [ ! -d "$SCENARIO" ]; then
+    echo -e "\e[1;31mError: Scenario does not exist\e[0m"
+    exit 1
+fi
+echo -e "\e[1;32mRunning Scenario $SCENARIO "
+
+
+NODES=()
+if [ "$TYPE" == "core" ]; then
+    while read N; do NODES=( "${NODES[@]}" "$N" ); done < <(find /tmp/ 2>/dev/null | grep pycore.*/n[0-9]*$ | sort)
+    
+    NODE_CNT=`find /tmp/ 2>/dev/null | grep pycore.*/n[0-9]*$ | wc -l`
+    if [ "$NODE_CNT" == "0" ]; then
+        echo -e "\e[1;31mError: Couldn't find any core nodes\e[0m"
+        exit 1
+    fi
+
+    echo -n -e "  Using CORE Nodes "
+    for NODE in ${NODES[@]}; do printf "`basename $NODE` "; done; echo
+    
+    exec_par () {
+        PIDS=""
+        FAIL="0"
+        for N in $1; do
+            vcmd -c ${NODES[$N]} -- sh -c "${@:2}" &
+            PIDS="$PIDS $!"
+        done
+        for PID in $PIDS; do
+            wait $PID || let "FAIL=$?"
+            printf .
+            if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 1; fi
+        done
+        echo
+    }
+    
+    exec_seq () {
+        echo
+        for N in $1; do
+            echo -n -e "  Node $N: "
+            vcmd -c ${NODES[$N]} -- sh -c "${@:2}"
+            echo
+        done
+    }
+    
+    exec () { vcmd -c ${NODES[$1]} -- sh -c "${@:2}"; }
+    shell () { vcmd -c ${NODES[$1]} -- sh; }
+    
+elif [ "$TYPE" == "miniworld" ]; then
+    NODE_CNT=`find /tmp/MiniWorld/ 2> /dev/null | grep "qemu.*sock" | wc -l`
+    for N in `seq 1 $NODE_CNT`; do
+        NODES=( "${NODES[@]}" "172.21.$N.1" )
+    done
+    
+    if [ "$NODE_CNT" == "0" ]; then
+        echo -e "\e[1;31mError: Couldn't find any MiniWorld nodes\e[0m"
+        exit 1
+    fi
+
+    echo -e "  Using MiniWorld Nodes ${NODES[@]}"
+    
+    # don't save key; don't echo warnings, ...
+    SSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=QUIET -o User=root"
+    
+    exec_par () {
+        PIDS=""
+        FAIL="0"
+        for N in $1; do
+            ssh $SSH_OPTIONS ${NODES[$N]} ". .profile; ${@:2}" &
+            PIDS="$PIDS $!"
+        done
+        for PID in $PIDS; do
+            wait $PID || let "FAIL=$?"
+            printf .
+            if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 1; fi
+        done
+        echo
+    }
+    
+    exec () { ssh $SSH_OPTIONS ${NODES[$1]} ". .profile; ${@:2}"; }
+    shell () { ssh $SSH_OPTIONS ${NODES[$1]}; }
+    
+else
+    echo -e "\e[1;31mError: Type $TYPE is not supported\e[0m"
+    exit 1
+fi
+
+# ALL_NODES contains indices of all nodes for easier handling
+ALL_NODES=`seq 0 $(($NODE_CNT - 1))`
+ACTIVE_NODE_CNT=`echo $ACTIVE_NODES | wc -w`
+
+# replacing -a option for all nodes
+if [ $6 = "-a" ]; then ACTIVE_NODES="$ALL_NODES"; fi
+echo -n -e "  Active: ${ACTIVE_NODES[@]}"
+echo -e "\e[0m\n"
+
+
+### Phase 0
+echo -e "\e[1;34mPhase 0 - Preconditions\e[0m"
+
+if [ "$TYPE" == "core" ]; then
+    echo "        - no preconditions needed for core"
+
+elif [ "$TYPE" == "miniworld" ]; then
+    echo "        - Setting IP for miniworld_tap interface... (needs sudo)"
+    sudo ifconfig miniworld_tap 172.21.254.1
+    if [ "$?" != "0" ]; then
+        echo -e "\e[1;31mError: Management Interface could not be configured.\e[0m"
+        exit 1
+    fi
+
+    echo -n "        - setting hostnames; copying scenario scripts"
+    PIDS=""
+    FAIL="0"
+    
+    for N in $ALL_NODES; do
+        ssh $SSH_OPTIONS ${NODES[$N]} "echo qemu$(($N + 1)) > /proc/sys/kernel/hostname; mkdir -p $SCENARIO_FOLDER" \
+            && scp -r $SSH_OPTIONS $SCENARIO_FOLDER/* ${NODES[$N]}:$SCENARIO_FOLDER &
+        PIDS="$PIDS $!"
+    done
+    for PID in $PIDS; do
+        wait $PID || let "FAIL=$?"
+        printf .
+        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 1; fi
+    done
+    echo
+fi
+
+
+### PHASE 1
+echo -n -e "\e[1;34mPhase 1 - Prepare: $SCENARIO_FOLDER/prepare $NODE_CNT $ACTIVE_NODE_CNT $PREP_ARGS\e[0m"
+exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/prepare $NODE_CNT $PREP_ARGS"
+
+### PHASE 2
+echo -n -e "\e[1;34mPhase 2 - Starting system monitoring\e[0m"
+exec_par "$ALL_NODES" "/serval-tests/monitor system"
+
+## PHASE 3
+echo -n -e "\e[1;34mPhase 3 - Starting servald\e[0m"
+exec_par "$ALL_NODES" "servald start > /dev/null"
+
+### PHASE 3.5
+echo -n -e "\e[1;34m        - Initiating scan for other servald instances\e[0m"
+exec_par "$ALL_NODES" 'for i in `ifconfig | grep "inet addr:172.17" | cut -d":" -f 2 | cut -d"." -f1,2,3`; do servald scan $i.255 > /dev/null; done'
+
+### PHASE 4
+echo -n -e "\e[1;34mPhase 4 - Starting servald monitoring\e[0m"
+exec_par "$ALL_NODES" "/serval-tests/monitor serval"
+
+### PHASE 5
+# using trap to kill running vcmds
+trap "kill $AGENTS 2> /dev/null; echo Killed agents; exit" SIGINT SIGTERM
+
+echo -n -e "\e[1;34mPhase 5 - Starting watch-agents: $SCENARIO_FOLDER/watch-agent $NODE_CNT $ACTIVE_NODE_CNT $WATCH_ARGS\e[0m"
+for NODE in `seq 0 $(($NODE_CNT - 1))`; do
+    exec $NODE "$SCENARIO_FOLDER/watch-agent $NODE_CNT $WATCH_ARGS" &
+    AGENTS="$AGENTS $!"
+    printf .
+done
+echo
+
+### PHASE 6
+echo -n -e "\e[1;34mPhase 6 - Initiating Scenario: $SCENARIO_FOLDER/initiate $NODE_CNT $ACTIVE_NODE_CNT $INIT_ARGS\e[0m"
+exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/initiate $NODE_CNT $INIT_ARGS"
+
+### PHASE 7
+echo -n -e "\e[1;34mPhase 7 - Waiting for agents\e[0m"
+FAIL="0"
+for PID in $AGENTS; do
+    wait $PID || let "FAIL=$?"
+    printf .
+    if [ "$FAIL" != "0" ]; then break; fi
+done
+echo
+
+if [ "$FAIL" == "0" ]; then
+    echo -n -e "\e[1;32m        - watch-agents finished, sleeping 5 seconds to have a trailer in monitoring\e[0m"
+    for i in {1..5}; do printf .; sleep 1; done
+    echo
+else
+    echo -e "\e[1;31m        - watch-agent $PID failed with $FAIL, aborting scenario.\e[0m"
+    kill $AGENTS 2> /dev/null
+    exit 1
+fi
+
+### PHASE 8
+echo -n -e "\e[1;34mPhase 8 - Teardown\e[0m"
+exec_par "$ALL_NODES" "/serval-tests/monitor stop; servald stop > /dev/null"
+
+
+### PHASE 9
+echo -n -e "\e[1;34mPhase 9 - Data Collection: \e[0m"
+if [ "$TYPE" == "core" ]; then
+    echo "not needed in core, check /tmp/serval-monitor"
+    
+elif [ "$TYPE" == "miniworld" ]; then
+    echo -n "getting data using scp"
+    LOG_FOLDER=/tmp/serval-monitor
+    
+    PIDS=""
+    FAIL="0"
+    for NODE in ${NODES[@]}; do
+        scp -r $SSH_OPTIONS $NODE:$LOG_FOLDER /tmp/$SCENARIO &
+        PIDS="$PIDS $!"
+    done
+    for PID in $PIDS; do
+        wait $PID || let "FAIL=$?"
+        printf .
+        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 1; fi
+    done
+    echo
+
+fi
+
+echo
+echo -e "\e[1;32mScenario $SCENARIO done.\e[0m"
