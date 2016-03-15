@@ -42,7 +42,7 @@ PIDS=""
 
 
 ### PHASE 1
-echo -e "\e[1;34mPhase 1 - Prepare: $1/initiate $2\e[0m"
+echo -e "\e[1;34mPhase 1 - Prepare: $1/prepare $2\e[0m"
 
 PREPARE=`readlink -e $1/prepare`
 for node in $ACTIVE_NODES; do
@@ -131,7 +131,7 @@ echo
 echo -e "\e[1;34mPhase 6 - Initiating Scenario: $1/initiate $4\e[0m"
 INIT=`readlink -e $1/initiate`
 for node in $ACTIVE_NODES; do
-    vcmd -c $node -- sh -c "$INIT $NUM_ALL_NODES $3"
+    vcmd -c $node -- sh -c "$INIT $NUM_ALL_NODES $4"
 done
 
 
