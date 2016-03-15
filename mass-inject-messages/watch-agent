@@ -35,7 +35,7 @@ while [ true ]; do
             echo "$HOSTNAME finished"
             exit 0
         fi
-    # Check if node is 
+    # Check if node is the active node in a setpu with more than two nodes 
     elif [ $(servald meshms list conversations $SID | wc -l) -gt 3 ]; then
         exit 0
     fi
