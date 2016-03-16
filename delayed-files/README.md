@@ -22,9 +22,9 @@ Watches for a specific time or for a specific number of files.
 ```
 (t <sec> | f <num>)
 ```
-With the `t` parameter, finishes watching `<sec>` seconds. With `f` after receiving `<num>` files.
+With the `t` parameter, finishes watching after `<sec>` seconds. With `f` after receiving `<num>` files.
 
 ---
 
 
-**NOTE:** The `t` parameters has to be set seperately.
+**NOTE:** The `t` parameters has to be set seperately per script.
