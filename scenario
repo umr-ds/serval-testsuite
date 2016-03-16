@@ -95,6 +95,15 @@ elif [ "$TYPE" == "miniworld" ]; then
         echo
     }
     
+    exec_seq () {
+        echo
+        for N in $1; do
+            echo -n -e "  Node $N: "
+            ssh $SSH_OPTIONS ${NODES[$N]} ". .profile; ${@:2}"
+            echo
+        done
+    }
+    
     exec () { ssh $SSH_OPTIONS ${NODES[$1]} ". .profile; ${@:2}"; }
     shell () { ssh $SSH_OPTIONS ${NODES[$1]}; }
     
@@ -104,7 +113,7 @@ else
 fi
 
 # ALL_NODES contains indices of all nodes for easier handling
-ALL_NODES=`seq 0 $(($NODE_CNT - 1))`
+ALL_NODES=`seq -s " " 0 $(($NODE_CNT - 1))`
 
 # replacing -a option for all nodes
 if [ $6 = "-a" ]; then ACTIVE_NODES="$ALL_NODES"; fi
@@ -214,11 +223,12 @@ if [ "$TYPE" == "core" ]; then
 elif [ "$TYPE" == "miniworld" ]; then
     echo -n "getting data using scp"
     LOG_FOLDER=/tmp/serval-monitor
+    mkdir -p $LOG_FOLDER
     
     PIDS=""
     FAIL="0"
     for NODE in ${NODES[@]}; do
-        scp -r $SSH_OPTIONS $NODE:$LOG_FOLDER /tmp/$SCENARIO &
+        scp -r $SSH_OPTIONS $NODE:$LOG_FOLDER $LOG_FOLDER/$SCENARIO &
         PIDS="$PIDS $!"
     done
     for PID in $PIDS; do
