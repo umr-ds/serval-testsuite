@@ -4,7 +4,11 @@ TIMEOUT_S="500"
 LATER=$((`date +%s` + $TIMEOUT_S))
 HOSTNAME=`hostname`
 
-if [ -z $2 ]; then
+TOTAL_NODES="$1"
+TOTAL_ACTIVE_NODES="$2"
+NUM="$3"
+
+if [ -z $NUM ]; then
   echo "Please provide number of expected files!"
   exit 1
 fi
@@ -25,7 +29,7 @@ while [ true ]; do
     fi
 
     # Check if condition is reached
-    if [ $(servald rhizome list | grep ":file:" | wc -l) -eq $2 ]; then
+    if [ $(servald rhizome list | grep ":file:" | wc -l) -eq $NUM ]; then
         exit 0
     fi
 
