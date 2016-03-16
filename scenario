@@ -105,10 +105,10 @@ fi
 
 # ALL_NODES contains indices of all nodes for easier handling
 ALL_NODES=`seq 0 $(($NODE_CNT - 1))`
-ACTIVE_NODE_CNT=`echo $ACTIVE_NODES | wc -w`
 
 # replacing -a option for all nodes
 if [ $6 = "-a" ]; then ACTIVE_NODES="$ALL_NODES"; fi
+ACTIVE_NODE_CNT=`echo $ACTIVE_NODES | wc -w`
 echo -n -e "  Active: ${ACTIVE_NODES[@]}"
 echo -e "\e[0m\n"
 
