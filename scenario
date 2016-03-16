@@ -147,7 +147,7 @@ fi
 
 ### PHASE 1
 echo -n -e "\e[1;34mPhase 1 - Prepare: $SCENARIO_FOLDER/prepare $NODE_CNT $ACTIVE_NODE_CNT $PREP_ARGS\e[0m"
-exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/prepare $NODE_CNT $PREP_ARGS"
+exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/prepare $NODE_CNT $ACTIVE_NODE_CNT $PREP_ARGS"
 
 ### PHASE 2
 echo -n -e "\e[1;34mPhase 2 - Starting system monitoring\e[0m"
@@ -171,7 +171,7 @@ trap "kill $AGENTS 2> /dev/null; echo Killed agents; exit" SIGINT SIGTERM
 
 echo -n -e "\e[1;34mPhase 5 - Starting watch-agents: $SCENARIO_FOLDER/watch-agent $NODE_CNT $ACTIVE_NODE_CNT $WATCH_ARGS\e[0m"
 for NODE in `seq 0 $(($NODE_CNT - 1))`; do
-    exec $NODE "$SCENARIO_FOLDER/watch-agent $NODE_CNT $WATCH_ARGS" &
+    exec $NODE "$SCENARIO_FOLDER/watch-agent $NODE_CNT $ACTIVE_NODE_CNT $WATCH_ARGS" &
     AGENTS="$AGENTS $!"
     printf .
 done
@@ -179,7 +179,7 @@ echo
 
 ### PHASE 6
 echo -n -e "\e[1;34mPhase 6 - Initiating Scenario: $SCENARIO_FOLDER/initiate $NODE_CNT $ACTIVE_NODE_CNT $INIT_ARGS\e[0m"
-exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/initiate $NODE_CNT $INIT_ARGS"
+exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/initiate $NODE_CNT $ACTIVE_NODE_CNT $INIT_ARGS"
 
 ### PHASE 7
 echo -n -e "\e[1;34mPhase 7 - Waiting for agents\e[0m"
