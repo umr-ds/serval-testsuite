@@ -1,5 +1,5 @@
 # Description
-In this scenario messages are sent periodically on the active nodes. The time periods between the files and the receivers of every message are randomly, but every time the same per node.
+In this scenario messages are sent periodically on the active nodes. The time periods between the messages and the receivers of every message are randomly, but every time the same per node.
 
 # prepare
 Nothing to do here.
