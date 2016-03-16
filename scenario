@@ -168,7 +168,8 @@ exec_par "$ALL_NODES" "servald start > /dev/null"
 
 ### PHASE 3.5
 echo -n -e "\e[1;34m        - Initiating scan for other servald instances\e[0m"
-exec_par "$ALL_NODES" 'for i in `ifconfig | grep "inet addr" | cut -d":" -f 2 | cut -d"." -f1,2,3`; do servald scan $i.255 > /dev/null; done; exit 0'
+# exec_par "$ALL_NODES" 'for i in `ifconfig | grep "inet addr" | cut -d":" -f 2 | cut -d"." -f1,2,3`; do servald scan $i.255 > /dev/null; done; exit 0'
+exec_seq "$ALL_NODES" 'for i in `ifconfig | grep "inet addr" | cut -d":" -f 2 | cut -d"." -f1,2,3`; do echo -n "$i.255: "; servald scan $i.255; done; exit 0'
 
 ### PHASE 4
 echo -n -e "\e[1;34mPhase 4 - Starting servald monitoring\e[0m"
