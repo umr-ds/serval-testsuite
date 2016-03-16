@@ -1,10 +1,14 @@
 #!/bin/sh
 
-case $2 in
+TOTAL_NODES="$1"
+TOTAL_ACTIVE_NODES="$2"
+NUM_MSGS="$3"
+
+case $NUM_MSGS in
     '' | *[!0-9]*)
         NUMBER_OF_MESSAGES=5;;
     *)
-        NUMBER_OF_MESSAGES=$2;;
+        NUMBER_OF_MESSAGES=$NUM_MSGS;;
 esac
 
 echo Number of messages $NUMBER_OF_MESSAGES

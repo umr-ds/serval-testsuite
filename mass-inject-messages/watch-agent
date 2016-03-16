@@ -6,11 +6,15 @@ HOSTNAME=`hostname`
 SID=$(servald id self | tail -n 1)
 NUMBER_OF_HEADER_LINES=2
 
-case $2 in
+TOTAL_NODES="$1"
+TOTAL_ACTIVE_NODES="$2"
+NUM_MSGS="$3"
+
+case $NUM_MSGS in
     '' | *[!0-9]*)
         NUMBER_OF_MESSAGES=5;;
     *)
-        NUMBER_OF_MESSAGES=$2;;
+        NUMBER_OF_MESSAGES=$NUM_MSGS;;
 esac
 
 while [ true ]; do
