@@ -4,6 +4,9 @@ TIMEOUT_S="500"
 LATER=$((`date +%s` + $TIMEOUT_S))
 HOSTNAME=`hostname`
 
+TOTAL_NODES="$1"
+TOTAL_ACTIVE_NODES="$2"
+
 while [ true ]; do
     # exit 1 if script itself fails
 
@@ -20,7 +23,7 @@ while [ true ]; do
     fi
 
     # Check if condition is reached
-    if [ $(servald peer count) -eq `expr $1 - 1` ]; then
+    if [ $(servald peer count) -eq `expr $TOTAL_NODES - 1` ]; then
         exit 0
     fi
 
