@@ -1,0 +1,68 @@
+#!/bin/sh
+
+HOSTNAME=`hostname`
+TESTFILE_PATH="/tmp/serval-testfiles"
+mkdir -p $TESTFILE_PATH
+rm -rf $TESTFILE_PATH/*
+
+TOTAL_NODES="$1"
+TOTAL_ACTIVE_NODES="$2"
+NUM="$3"
+PATH="$4"
+BYTESIZE="$5"
+BYTECOUNT="$6"
+
+# generate_files <NUM> <PATH> <BYTESIZE> <BYTECOUNT>
+generate_files() {
+  for cnt in `seq 1 $NUM`; do
+    dd if=/dev/urandom of=$PATH-$cnt.file bs=$BYTESIZE count=$BYTECOUNT
+  done
+}
+
+generate_small() {
+  generate_files $NUM "$PATH/64k" "1K" "64"
+  generate_files $NUM "$PATH/256k" "1K" "256"
+  generate_files $NUM "$PATH/512k" "1K" "512"
+}
+generate_medium() {
+  generate_files $NUM "$PATH/1m" "1M" "1"
+  generate_files $NUM "$PATH/5m" "1M" "5"
+  generate_files $NUM "$PATH/10m" "1M" "10"
+}
+generate_large() {
+  generate_files $NUM "$PATH/25m" "1M" "25"
+  generate_files $NUM "$PATH/50m" "1M" "50"
+  generate_files $NUM "$PATH/100m" "1M" "100"
+}
+
+if [ -z $BYTESIZE ]; then
+  NUM_FILES=1
+else
+  NUM_FILES=$BYTESIZE
+fi
+echo "Generating $NUM_FILES per type.."
+if [ -z $PATH ]; then
+  echo "Default set"
+  echo "Generating files on $HOSTNAME: "
+  generate_files $NUM_FILES "$TESTFILE_PATH/64k" "1K" "64"
+  generate_files $NUM_FILES "$TESTFILE_PATH/256k" "1K" "256"
+  generate_files $NUM_FILES "$TESTFILE_PATH/512k" "1K" "512"
+elif [ "$PATH" = "f1" ]; then
+  echo "File-Set: f1 - small"
+  echo "Generating files on $HOSTNAME: "
+  generate_small $NUM_FILES $TESTFILE_PATH
+elif [ "$PATH" = "f2" ]; then
+  echo "File-Set: f2 - medium"
+  echo "Generating files on $HOSTNAME: "
+  generate_medium $NUM_FILES $TESTFILE_PATH
+elif [ "$PATH" = "f3" ]; then
+  echo "File-Set: f3 - large"
+  echo "Generating files on $HOSTNAME: "
+  generate_large $NUM_FILES $TESTFILE_PATH
+elif [ "$PATH" = "f4" ]; then
+  echo "File-Set: f4 - combined"
+  echo "Generating files on $HOSTNAME: "
+  generate_small $NUM_FILES $TESTFILE_PATH
+  generate_medium $NUM_FILES $TESTFILE_PATH
+  generate_large $NUM_FILES $TESTFILE_PATH
+fi
