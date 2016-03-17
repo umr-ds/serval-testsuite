@@ -13,8 +13,8 @@ NUM="$4"
 
 # generate_files <NUM> <PATH> <BYTESIZE> <BYTECOUNT>
 generate_files() {
-  for cnt in `/usr/bin/seq 1 $1`; do
-    /bin/dd if=/dev/urandom of=$2-$cnt.file bs=$3 count=$4
+  for cnt in `seq 1 $1`; do
+    dd if=/dev/urandom of=$2-$cnt.file bs=$3 count=$4
   done
 }
 
