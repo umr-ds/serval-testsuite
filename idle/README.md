@@ -12,3 +12,8 @@ Watches for all serval nodes.
 
 ### Usage
 No usage.
+
+# Example
+```
+./scenario core idle/ "" "" "" -a
+```

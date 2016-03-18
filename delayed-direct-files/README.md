@@ -25,5 +25,11 @@ Finishes watching after `<timeout>` seconds.
 
 ---
 
-
 **NOTE:** The `<timeout>` parameters has to be set seperately per script and a bit longer on watch-agent, to ensure waiting long enough to get all files.
+
+# Example
+```
+./scenario core delayed-direct-files/ "" "10" "5 f2" 0
+```
+
+With this call, the watch-agent will wait 10 seconds, while the initiate script will send files for 5 seconds on node 0 from the test-set 2.
