@@ -9,20 +9,20 @@ Starts the SimpleMeshUser.py script on every active node.
 
 ### Usage
 ```
-t <sec>
+<timeout>
 ```
-With the `t` parameter, messages will be sent for `<sec>` seconds.
+Messages will be sent for `<timeout>` seconds.
 
 # watch-agent
 Watches for a specific time.
 
 ### Usage
 ```
-t <sec>
+<timeout>
 ```
-With the `t` parameter, finishes watching after `<sec>` seconds.
+Finishes watching after `<timeout>` seconds.
 
 ---
 
 
-**NOTE:** The `t` parameters has to be set seperately per script.
+**NOTE:** The `<timeout>` parameters has to be set seperately per script and a bit longer on watch-agent, to ensure waiting long enough to get all files.

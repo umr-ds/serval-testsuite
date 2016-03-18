@@ -9,10 +9,8 @@ TOTAL_ACTIVE_NODES="$2"
 TIME="$3"
 TIME_VAL="$4"
 
-if [ "$TIME" = "t" ]; then
-	SCENARIO_TIMEOUT="$TIME_VAL"
-	SCENARIO_LATER=$((`date +%s` + $SCENARIO_TIMEOUT))
-fi
+SCENARIO_TIMEOUT="$TIME_VAL"
+SCENARIO_LATER=$((`date +%s` + $SCENARIO_TIMEOUT))
 
 while [ true ]; do
     # exit 1 if script itself fails
@@ -30,11 +28,9 @@ while [ true ]; do
     fi
 
     # Check if condition is reached
-    if [ "$TIME" = "t" ]; then
-    	if [ "$SCENARIO_LATER" -lt `date +%s` ]; then
-    		echo "Timout reached on $HOSTNAME"
-    		exit 0
-    	fi
+    if [ "$SCENARIO_LATER" -lt `date +%s` ]; then
+    	echo "Timout reached on $HOSTNAME"
+    	exit 0
     fi
 
     sleep 1

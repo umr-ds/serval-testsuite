@@ -2,9 +2,6 @@
 
 TOTAL_NODES="$1"
 TOTAL_ACTIVE_NODES="$2"
-TIME="$3"
-TIME_VAL="$4"
+TIME_VAL="$3"
 
-if [ "$TIME" = "t" ]; then
-	`python /home/meshadmin/serval-tests/SimpleMeshUser.py -t $TIME_VAL`
-fi
+`python /home/meshadmin/serval-tests/SimpleMeshUser.py -t $TIME_VAL`
