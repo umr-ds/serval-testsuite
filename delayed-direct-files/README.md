@@ -9,21 +9,21 @@ Starts the DirectedRhizomeAdder.py script on every active node.
 
 ### Usage
 ```
-t <sec> (f1 | f2 | f3)
+<timeout> (f1 | f2 | f3)
 ```
-With the `t` parameter, messages will be sent for `<sec>` seconds.
-With `f1` files with a size 250kB will be added, with `f2` with 5MB and with `f3` with 50MB.
+Files will be sent for `<timeout>` seconds.
+With `f1` files with a size between 64k and 512k will be added, with `f2` between 1M and 10 M and with `f3` with 25M and 100M.
 
 # watch-agent
 Watches for a specific time.
 
 ### Usage
 ```
-t <sec>
+<timeout>
 ```
-With the `t` parameter, finishes watching after `<sec>` seconds.
+Finishes watching after `<timeout>` seconds.
 
 ---
 
 
-**NOTE:** The `t` parameters has to be set seperately per script.
+**NOTE:** The `<timeout>` parameters has to be set seperately per script and a bit longer on watch-agent, to ensure waiting long enough to get all files.

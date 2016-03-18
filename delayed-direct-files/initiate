@@ -2,16 +2,7 @@
 
 TOTAL_NODES="$1"
 TOTAL_ACTIVE_NODES="$2"
-TIME="$3"
-TIME_VAL="$4"
-TEST_SET="$5"
+TIME_VAL="$3"
+TEST_SET="$4"
 
-if [ "$TIME" = "t" ]; then
-	if [ "$TEST_SET" = "f1" ]; then
-		`python /home/meshadmin/serval-tests/DirectedRhizomeAdder.py -s 256 -t $TIME_VAL`
-	elif [ "$TEST_SET" = "f2" ]; then
-		`python /home/meshadmin/serval-tests/DirectedRhizomeAdder.py -s 5000 -t $TIME_VAL`
-	elif [ "$TEST_SET" = "f3" ]; then
-		`python /home/meshadmin/serval-tests/DirectedRhizomeAdder.py -s 50000 -t $TIME_VAL`
-	fi
-fi
+`python /home/meshadmin/serval-tests/DirectedRhizomeAdder.py -s $TEST_SET -t $TIME_VAL`
