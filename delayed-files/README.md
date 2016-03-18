@@ -9,7 +9,7 @@ Starts the SimpleRhizomeAdder.py script on every active node.
 
 ### Usage
 ```
-(t <sec> | f <num>) (<f1 | f2 | f3>)
+(t <sec> | f <num>) (f1 | f2 | f3)
 ```
 With the `t` parameter, files will be added for `<sec>` seconds. With `f` only `<num>` files will be added.
 
@@ -27,4 +27,5 @@ With the `t` parameter, finishes watching after `<sec>` seconds. With `f` after 
 ---
 
 
-**NOTE:** The `t` parameters has to be set seperately per script.
+**NOTE:** The `t` parameters has to be set seperately per script and a bit longer on watch-agent, to ensure waiting long enough to get all files.
+**NOTE:** <num> have to be the same in both scripts.
