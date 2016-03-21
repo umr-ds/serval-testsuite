@@ -1,0 +1,22 @@
+#! /bin/bash
+if [ "$1" = "-h" ]; then
+    echo "usage: $0 [...]"
+    echo "watches servald on every miniworld node, and fires errors"
+fi
+
+NODE_CNT=`find /tmp/MiniWorld/ 2> /dev/null | grep "qemu.*sock" | wc -l`
+for N in `seq 1 $NODE_CNT`; do
+    NODES=( "${NODES[@]}" "172.21.$N.1" )
+done
+
+SSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=QUIET -o User=root"
+
+echo "Setting IP for miniworld_tap interface... (needs sudo)"
+sudo ifconfig miniworld_tap 172.21.254.1
+
+while [ true ]; do
+    for N in `seq -s " " 0 $(($NODE_CNT - 1))`; do
+        ssh $SSH_OPTIONS ${NODES[$N]} 'if [ $(ps w | grep "servald start" | grep -v grep | wc -l) -lt 1 ]; then echo Serval not running on $(hostname); fi'
+    done
+    sleep 1
+done
