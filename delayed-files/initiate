@@ -6,8 +6,4 @@ COUNT_OR_TIME="$3"
 COUNT_OR_TIME_VAL="$4"
 TEST_SET="$5"
 
-if [ "$COUNT_OR_TIME" = "f" ]; then
-	`python /home/meshadmin/serval-tests/SimpleRhizomeAdder.py -s $TEST_SET -f $COUNT_OR_TIME_VAL`
-elif [ "$COUNT_OR_TIME" = "t" ]; then
-	`python /home/meshadmin/serval-tests/SimpleRhizomeAdder.py -s $TEST_SET -t $COUNT_OR_TIME_VAL`
-fi
+python /home/meshadmin/serval-tests/SimpleRhizomeAdder.py -s $TEST_SET -$COUNT_OR_TIME $COUNT_OR_TIME_VAL
