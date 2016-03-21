@@ -9,8 +9,6 @@ TOTAL_ACTIVE_NODES="$2"
 COUNT_OR_TIME="$3"
 COUNT_OR_TIME_VAL="$4"
 
-TOTAL_FILES=$(($COUNT_OR_TIME_VAL * $TOTAL_ACTIVE_NODES))
-
 if [ "$COUNT_OR_TIME" = "t" ]; then
 	SCENARIO_TIMEOUT="$COUNT_OR_TIME_VAL"
 	SCENARIO_LATER=$((`date +%s` + $SCENARIO_TIMEOUT))
@@ -33,7 +31,7 @@ while [ true ]; do
 
     # Check if condition is reached
     if [ "$COUNT_OR_TIME" = "f" ]; then
-    	if [ $(servald rhizome list | grep ":file:" | wc -l) -eq $TOTAL_FILES ]; then
+    	if [ $(servald rhizome list | grep ":file:" | wc -l) -eq $(($COUNT_OR_TIME_VAL * $TOTAL_ACTIVE_NODES)) ]; then
     		echo "All file arrived on $HOSTNAME"
     		exit 0
     	fi

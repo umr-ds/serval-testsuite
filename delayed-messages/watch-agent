@@ -6,12 +6,10 @@ HOSTNAME=`hostname`
 
 TOTAL_NODES="$1"
 TOTAL_ACTIVE_NODES="$2"
-NUM="$3"
+TIME_VAL="$3"
 
-if [ -z $NUM ]; then
-  echo "Please provide number of expected files!"
-  exit 1
-fi
+SCENARIO_TIMEOUT="$TIME_VAL"
+SCENARIO_LATER=$((`date +%s` + $SCENARIO_TIMEOUT))
 
 while [ true ]; do
     # exit 1 if script itself fails
@@ -29,8 +27,9 @@ while [ true ]; do
     fi
 
     # Check if condition is reached
-    if [ $(servald rhizome list | grep ":file:" | wc -l) -eq $NUM ]; then
-        exit 0
+    if [ "$SCENARIO_LATER" -lt `date +%s` ]; then
+    	echo "Timout reached on $HOSTNAME"
+    	exit 0
     fi
 
     sleep 1

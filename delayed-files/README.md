@@ -9,7 +9,7 @@ Starts the SimpleRhizomeAdder.py script on every active node.
 
 ### Usage
 ```
-(t <sec> | f <num>) (<f1 | f2 | f3>)
+(t <sec> | f <num>) (f1 | f2 | f3)
 ```
 With the `t` parameter, files will be added for `<sec>` seconds. With `f` only `<num>` files will be added.
 
@@ -22,9 +22,20 @@ Watches for a specific time or for a specific number of files.
 ```
 (t <sec> | f <num>)
 ```
-With the `t` parameter, finishes watching `<sec>` seconds. With `f` after receiving `<num>` files.
+With the `t` parameter, finishes watching after `<sec>` seconds. With `f` after receiving `<num>` files.
 
 ---
 
+**NOTE:** The `t` parameters has to be set seperately per script and a bit longer on watch-agent, to ensure waiting long enough to get all files.
+**NOTE:** <num> have to be the same in both scripts.
 
-**NOTE:** The `t` parameters has to be set seperately.
+# Example
+```
+./scenario core delayed-files/ "" "t 10" "t 5 f2" 0
+```
+With this call, the watch-agent will wait 10 seconds, while the initiate script will send files for 5 seconds on node 0 from the test-set 2.
+
+```
+./scenario core delayed-files/ "" "f 2" "f 2 f1" -a
+```
+With this call, the watch-agent will wait until 2 files from every active node arrives, while every active node will send 2 files. Here, every node is active.
