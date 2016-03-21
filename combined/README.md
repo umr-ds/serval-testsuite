@@ -2,19 +2,14 @@
 Runs all scenarios at once.
 
 # prepare
-Generates files which will be sent on initiate.
-### Usage
-```
-<num_files> <path> <bytesize> <bytecount>
-```
-Generate `<num_files>` files in `<path>` with `<bytesize>` times `<bytecount>` size.
+Nothing to do here.
 
 # initiate
 Initiates all scenarios. For more information see the README of the respective scenario.
 
 ### Usage
 ```
-<timeout> (f1 | f2 | f3) (f <num_delayed_files> | t <timeout>) <path> <num_messages>
+<timeout> (f1 | f2 | f3 | f4) (t <timeout> | f <file_count>) <salt>
 ```
 
 # watch-agent
