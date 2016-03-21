@@ -1,34 +1,18 @@
 #!/bin/sh
 
 TOTAL_NODES="$1"
-TOTAL_ACTIVE_NODES="$2"
+TOTAL_NODES_ACTIVE="$2"
 
-TIME_DM="t"
-TIME_VAL_DM="$3"
+TIME_VAL="$3"
+TEST_SET="$4"
+COUNT_OR_TIME="$5"
+COUNT_OR_TIME_VAL="$6"
+SALT="$7"
 
-TIME_DDF="t"
-TIME_VAL_DDF="$3"
-TEST_SET_DDF="$4"
+./initiate-ddf $TOTAL_NODES $TOTAL_NODES_ACTIVE $TIME_VAL $TEST_SET &
 
-TEST_SET_DF="$4"
-COUNT_OR_TIME_DF="$5"
-COUNT_OR_TIME_VAL_DF="$6"
+./initiate-df $TOTAL_NODES $TOTAL_NODES_ACTIVE $COUNT_OR_TIME $COUNT_OR_TIME_VAL $TEST_SET &
 
-TESTFILE_PATH_MIF="$7"
+./initiate-dm $TOTAL_NODES $TOTAL_NODES_ACTIVE $TIME_VAL &
 
-NUM_MSGS_MIM="$8"
-
-echo "Initiating delayed messages..."
-/bin/sh initiate-delayed-messages $TOTAL_NODES $TOTAL_ACTIVE_NODES $TIME_DM $TIME_DM_VAL
-
-echo "Initiating delayed direct files..."
-/bin/sh initiate-delayed-direct-files $TOTAL_NODES $TOTAL_ACTIVE_NODES $TIME_DDF $TIME_VAL_DDF $TEST_SET_DDF
-
-echo "Initiating delayed files..."
-/bin/sh initiate-delayed-files $TOTAL_NODES $TOTAL_ACTIVE_NODES $TEST_SET_DF $COUNT_OR_TIME_DF $COUNT_OR_TIME_VAL_DF
-
-echo "Initiating mass inject files..."
-/bin/sh initiate-mass-inject-files $TOTAL_NODES $TOTAL_ACTIVE_NODES $TESTFILE_PATH_MIF
-
-echo "Initiating mass inject messages..."
-/bin/sh initiate-mass-inject-messages $TOTAL_NODES $TOTAL_ACTIVE_NODES $NUM_MSGS_MIM
+./initiate-m $TOTAL_NODES $TOTAL_NODES_ACTIVE $TEST_SET $TIME_VAL $SALT &
