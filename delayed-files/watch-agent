@@ -17,17 +17,18 @@ if [ "$COUNT_OR_TIME" = "t" ]; then
 fi
 
 while [ true ]; do
-    # exit 1 if script itself fails
+    # returns 1 if script itself fails
+    # returns 255 if ssh/vcmd session fails
 
     # Check if servald is running
-    if [ $(ps aux | grep "servald start" | grep -v grep | wc -l) -lt 1 ]; then
-        echo "Serval crashed on $HOSTNAME" >&2
+    if [ `(ps aux 2> /dev/null || ps w) | grep "servald start" | grep -v grep | wc -l` -lt 1 ]; then
+        echo "ERROR: Serval crashed on $HOSTNAME" >&2
         exit 2
     fi
 
     # Check if test timed out
     if [ "$LATER" -lt `date +%s` ]; then
-        echo "Timeout on $HOSTNAME" >&2
+        echo "ERROR: Timeout on $HOSTNAME" >&2
         exit 3
     fi
 
