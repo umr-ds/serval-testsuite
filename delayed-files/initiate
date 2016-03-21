@@ -6,4 +6,4 @@ COUNT_OR_TIME="$3"
 COUNT_OR_TIME_VAL="$4"
 TEST_SET="$5"
 
-python /home/meshadmin/serval-tests/SimpleRhizomeAdder.py -s $TEST_SET -$COUNT_OR_TIME $COUNT_OR_TIME_VAL
+python /serval-tests/SimpleRhizomeAdder.py -s $TEST_SET -$COUNT_OR_TIME $COUNT_OR_TIME_VAL

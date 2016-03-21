@@ -35,12 +35,12 @@ while [ true ]; do
     # Check if condition is reached
     if [ "$COUNT_OR_TIME" = "f" ]; then
     	if [ $(servald rhizome list | grep ":file:" | wc -l) -eq $TOTAL_FILES ]; then
-    		echo "All file arrived on $HOSTNAME"
+    		echo "Scenario finished on $HOSTNAME: All files arrived"
     		exit 0
     	fi
     elif [ "$COUNT_OR_TIME" = "t" ]; then
     	if [ "$SCENARIO_LATER" -lt `date +%s` ]; then
-    		echo "Timout reached on $HOSTNAME"
+    		echo "Scenario finished on $HOSTNAME: Timout reached"
     		exit 0
     	fi
     fi

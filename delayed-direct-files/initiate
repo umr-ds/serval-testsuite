@@ -5,4 +5,4 @@ TOTAL_ACTIVE_NODES="$2"
 TIME_VAL="$3"
 TEST_SET="$4"
 
-python /home/meshadmin/serval-tests/DirectedRhizomeAdder.py -s $TEST_SET -t $TIME_VAL
+python /serval-tests/DirectedRhizomeAdder.py -s $TEST_SET -t $TIME_VAL
