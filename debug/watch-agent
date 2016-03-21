@@ -1,11 +1,12 @@
 #!/bin/sh
 
-TIMEOUT_S="5"
+TIMEOUT_S="60"
 LATER=$((`date +%s` + $TIMEOUT_S))
 HOSTNAME=`hostname`
 
 while [ true ]; do
-    # exit 1 if script itself fails
+    # returns 1 if script itself fails
+    # returns 255 if ssh/vcmd session fails
 
     # Check if servald is running
     if [ `(ps aux 2> /dev/null || ps w) | grep "servald start" | grep -v grep | wc -l` -lt 1 ]; then
