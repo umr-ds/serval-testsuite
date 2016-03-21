@@ -160,7 +160,7 @@ exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/prepare $NODE_CNT $ACTIVE_NODE_CNT $P
 
 ### PHASE 2
 echo -n -e "\e[1;34mPhase 2 - Starting system monitoring\e[0m"
-exec_par "$ALL_NODES" "/home/meshadmin/serval-tests/monitor system"
+exec_par "$ALL_NODES" "/serval-tests/monitor system"
 
 ## PHASE 3
 echo -n -e "\e[1;34mPhase 3 - Starting servald\e[0m"
@@ -173,7 +173,7 @@ exec_seq "$ALL_NODES" 'for i in `ifconfig | grep "inet addr" | cut -d":" -f 2 | 
 
 ### PHASE 4
 echo -n -e "\e[1;34mPhase 4 - Starting servald monitoring\e[0m"
-exec_par "$ALL_NODES" "/home/meshadmin/serval-tests/monitor serval"
+exec_par "$ALL_NODES" "/serval-tests/monitor serval"
 
 ### PHASE 5
 # using trap to kill running vcmds
@@ -206,7 +206,7 @@ fi
 
 ### PHASE 8
 echo -n -e "\e[1;34mPhase 8 - Teardown\e[0m"
-exec_par "$ALL_NODES" "/home/meshadmin/serval-tests/monitor stop; servald stop > /dev/null"
+exec_par "$ALL_NODES" "/serval-tests/monitor stop; servald stop > /dev/null"
 
 
 ### PHASE 9
@@ -217,12 +217,13 @@ if [ "$TYPE" == "core" ]; then
 elif [ "$TYPE" == "miniworld" ]; then
     echo -n "getting data using scp"
     LOG_FOLDER=/tmp/serval-monitor
-    mkdir -p $LOG_FOLDER
+    LOCAL_LOG_FOLDER=${LOG_FOLDER}-miniworld
+    mkdir -p $LOCAL_LOG_FOLDER
     
     PIDS=""
     FAIL="0"
     for NODE in ${NODES[@]}; do
-        scp -q -r $SSH_OPTIONS $NODE:$LOG_FOLDER $LOG_FOLDER/$SCENARIO &
+        scp -q -r $SSH_OPTIONS $NODE:$LOG_FOLDER $LOCAL_LOG_FOLDER/$SCENARIO &
         PIDS="$PIDS $!"
     done
     for PID in $PIDS; do

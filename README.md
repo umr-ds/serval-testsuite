@@ -56,7 +56,7 @@ Example: ```$ ./scenario core mass-inject-file 0```
 
 The core nodes do need some files in place:
 
- - **/home/meshadmin/serval-tests/\***
+ - **/serval-tests/\***
  - **servald**
 
 ### Setup Scenario
