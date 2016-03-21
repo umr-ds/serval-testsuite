@@ -192,23 +192,16 @@ echo -n -e "\e[1;34mPhase 6 - Initiating Scenario: $SCENARIO_FOLDER/initiate $NO
 exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/initiate $NODE_CNT $ACTIVE_NODE_CNT $INIT_ARGS"
 
 ### PHASE 7
-echo -n -e "\e[1;34mPhase 7 - Waiting for agents\e[0m"
-FAIL="0"
+echo -e "\e[1;34mPhase 7 - Waiting for agents:\e[0m"
 for PID in $AGENTS; do
-    wait $PID || let "FAIL=$?"
-    printf .
-    if [ "$FAIL" != "0" ]; then break; fi
+    wait $PID || echo "  Watch-Agent $PID failed ($?)."
 done
 echo
 
 if [ "$FAIL" == "0" ]; then
-    echo -n -e "\e[1;32m        - watch-agents finished, sleeping 5 seconds to have a trailer in monitoring\e[0m"
+    echo -n -e "\e[1;32mPhase 7 - watch-agents finished, sleeping 5 seconds to have a trailer in monitoring\e[0m"
     for i in {1..5}; do printf .; sleep 1; done
     echo
-else
-    echo -e "\e[1;31m        - watch-agent $PID failed with $FAIL, aborting scenario.\e[0m"
-    kill $AGENTS 2> /dev/null
-    exit 1
 fi
 
 ### PHASE 8
