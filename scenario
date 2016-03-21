@@ -15,6 +15,9 @@ WATCH_ARGS=$4
 INIT_ARGS=$5
 ACTIVE_NODES=${@:6}
 
+SEVERAL_ALL_SIDS_FILE="/tmp/serval-all-sids"
+rm -f $SEVERAL_ALL_SIDS_FILE
+
 
 # test if scenario is available
 if [ ! -d "$SCENARIO" ]; then
@@ -41,7 +44,7 @@ if [ "$TYPE" == "core" ]; then
         PIDS=""
         FAIL="0"
         for N in $1; do
-            vcmd -c ${NODES[$N]} -- sh -c "${@:2}" &
+            vcmd -c ${NODES[$N]} -- sh -c "${@:2}" 1>&2 &
             PIDS="$PIDS $!"
         done
         for PID in $PIDS; do
@@ -84,7 +87,7 @@ elif [ "$TYPE" == "miniworld" ]; then
         PIDS=""
         FAIL="0"
         for N in $1; do
-            ssh $SSH_OPTIONS ${NODES[$N]} ". .profile; ${@:2}" &
+            ssh $SSH_OPTIONS ${NODES[$N]} ". .profile; ${@:2}" 1>&2 &
             PIDS="$PIDS $!"
         done
         for PID in $PIDS; do
@@ -166,7 +169,25 @@ exec_par "$ALL_NODES" "/serval-tests/monitor system"
 echo -n -e "\e[1;34mPhase 3 - Starting servald\e[0m"
 exec_par "$ALL_NODES" "servald start > /dev/null; sleep 2"
 
-### PHASE 3.5
+## PHASE 3.1
+echo -n -e "\e[1;34m        - Collecting serval sids\e[0m"
+exec_par "$ALL_NODES" "servald id self | tail -n1" 2>> $SEVERAL_ALL_SIDS_FILE
+
+echo -n -e "\e[1;34m        - Distributing serval sids\e[0m"
+if [ "$TYPE" == "miniworld" ]; then
+    for N in $ALL_NODES; do
+        scp -q -r $SSH_OPTIONS $SEVERAL_ALL_SIDS_FILE ${NODES[$N]}:$SEVERAL_ALL_SIDS_FILE &
+        MYPIDS="$MYPIDS $!"
+    done
+    for PID in $MYPIDS; do
+        wait $PID || let "FAIL=$?"
+        printf .
+        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 1; fi
+    done
+    echo
+fi
+
+### PHASE 3.2
 if [ "$TYPE" == "core" ]; then
     echo -n -e "\e[1;34m        - Initiating scan for other servald instances\e[0m"
     exec_seq "$ALL_NODES" 'for i in `ifconfig | grep "inet addr" | grep -v "127.0.0" | cut -d":" -f 2 | cut -d"." -f1,2,3`; do echo -n "$i.255: "; servald scan $i.255; done; exit 0'
