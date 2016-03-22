@@ -13,19 +13,14 @@ Initiates all scenarios. For more information see the README of the respective s
 ```
 
 # watch-agent
-Waits, unitl all scenarios are finished. For detailed finishing conditions, see the README of the resprective scenario.
+Waits, unitl all scenarios are finished. For the sake of convenience, this script wait's only for a timeout.
 
 ### Usage
 ```
-<timeout> (f <num_delayed_files> | t <timeout>) <num_files> <num_messages>
+<timeout>
 ```
 
 ---
 
-**NOTE:** `<num_files>` has to be the same.
-**NOTE:** `<path>` has to be the same.
-**NOTE:** Both `<timeout>` parameters in initate has to be the same.
-**NOTE:** Both `<timeout>` parameters in watch-agent has to be the same.
-**NOTE:** `<num_delayed_files>` has to be the same.
-**NOTE:** `<num_messages>` hast to be the same.
-**NOTE:** `<timeout>` in watch-agent has to be higher than in initiate.
+**NOTE:** The first `<timeout>` parameter is for delayed messages and delayed directed files. The second `<timtout>`, that after the `t` is for delayed files.
+**NOTE:** The `<timeout>` for the watch-agent should be a lot higher than the timeouts in initiate, since the delayed files and mass injects can be very long.

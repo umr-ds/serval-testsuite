@@ -13,10 +13,10 @@ RANDOM=$SEED
 
 while [ $LATER -gt `date +%s` ]; do
 	rm -rf /tmp/serval-testfiles
-	./prepare-ad-hoc $TOTAL_NODES $TOTAL_NODES_ACTIVE $TEST_SET $(( ( $RANDOM % 10 )  + 1 ))
+	$(dirname $0)/prepare-ad-hoc $TOTAL_NODES $TOTAL_NODES_ACTIVE $TEST_SET $(( ( $RANDOM % 10 )  + 1 ))
 	
-	./initiate-mif $TOTAL_NODES $TOTAL_NODES_ACTIVE
-	./initiate-mim $TOTAL_NODES $TOTAL_NODES_ACTIVE $(( ( $RANDOM % 10 )  + 1 ))
+	$(dirname $0)/initiate-mif $TOTAL_NODES $TOTAL_NODES_ACTIVE
+	$(dirname $0)/initiate-mim $TOTAL_NODES $TOTAL_NODES_ACTIVE $(( ( $RANDOM % 10 )  + 1 ))
 	
 	sleep $(( ( ( $RANDOM % $TIME_VAL )  + `hostname | tr -dc '0-9'` ) ))
 done
