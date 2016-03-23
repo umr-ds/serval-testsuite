@@ -9,10 +9,10 @@ COUNT_OR_TIME="$5"
 COUNT_OR_TIME_VAL="$6"
 SALT="$7"
 
-nohup $(dirname $0)/initiate-ddf $TOTAL_NODES $TOTAL_NODES_ACTIVE $TIME_VAL $TEST_SET
+nohup bash -c "$(dirname $0)/initiate-ddf $TOTAL_NODES $TOTAL_NODES_ACTIVE $TIME_VAL $TEST_SET &"
 
-nohup $(dirname $0)/initiate-df $TOTAL_NODES $TOTAL_NODES_ACTIVE $COUNT_OR_TIME $COUNT_OR_TIME_VAL $TEST_SET
+nohup bash -c "$(dirname $0)/initiate-df $TOTAL_NODES $TOTAL_NODES_ACTIVE $COUNT_OR_TIME $COUNT_OR_TIME_VAL $TEST_SET &"
 
-nohup $(dirname $0)/initiate-dm $TOTAL_NODES $TOTAL_NODES_ACTIVE $TIME_VAL
+nohup bash -c "$(dirname $0)/initiate-dm $TOTAL_NODES $TOTAL_NODES_ACTIVE $TIME_VAL &"
 
-nohup $(dirname $0)/initiate-m $TOTAL_NODES $TOTAL_NODES_ACTIVE $TEST_SET $TIME_VAL $SALT
+nohup bash -c "$(dirname $0)/initiate-m $TOTAL_NODES $TOTAL_NODES_ACTIVE $TEST_SET $TIME_VAL $SALT &"
