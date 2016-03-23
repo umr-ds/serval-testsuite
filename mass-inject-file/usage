@@ -1,0 +1,1 @@
+./scenario (core | miniworld) mass-inject-file/ "<fileset> [number]" "<number>" "" [0 ... | -a ]

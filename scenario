@@ -1,10 +1,18 @@
 #! /bin/bash
-if [ "$1" = "-h" ] || [ "$#" -lt 3 ]; then
-    echo "usage: $0 (core | miniworld) scenario p w i [0 ... | -a ]"
+if [ "$1" = "-h" ] || [ "$#" -lt 2 ]; then
+    echo "usage: $0 (core | miniworld | help) scenario p w i [0 ... | -a ]"
     echo "starts a scenario with prepare/initiate at all given nodes"
     echo "       params for scripts: p - preparations"
     echo "       params for scripts: w - watch-agents"
     echo "       params for scripts: i - initiate"
+    echo
+    echo "With help, a help text for the scenario will be printed."
+    exit
+fi
+
+if [ "$1" = "help" ]; then
+	cat `readlink -e $2`/usage
+	exit 1
 fi
 
 TYPE=$1

@@ -32,14 +32,20 @@ This way the operator is able to debug the scenario. It's also possible to write
 To run a scenario use the **core-gui** or **MiniWorld** to start it and then use **scenario** to start the scenario:
 
 ```bash
-usage: $0 scenario (core | miniworld) p w i [0 ... | -a ]
+usage: ./scenario (core | miniworld | help) scenario p w i [0 ... | -a ]
 starts a scenario with prepare/initiate at all given nodes
        params for scripts: p - preparations
        params for scripts: w - watch-agents
        params for scripts: i - initiate
+
+With help, a help text for the scenario will be printed.
 ```
 
-Example: ```$ ./scenario core mass-inject-file 0```
+With `./scenario help scenario` a info will be printed, how this scenario has to be called.
+
+Examples:
+1. ```$ ./scenario core mass-inject-file 0```
+2. `./scenario help delayed-files/`
 
 
 
@@ -62,11 +68,14 @@ The core nodes do need some files in place:
 ### Setup Scenario
 
 New directory is the scenario name
-Three files are needed:
+Four files are needed:
 
 * **prepare** - is done right after the start before anything else
 * **watch-agent** - is used to monitor for results
 * **initiate** - triggers the test itself
+* **usage** - the text, which should be shown, when using the `help` option.
+
+A README would be nice.
 
 All scripts get these parameters when executed:
 
