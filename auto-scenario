@@ -1,0 +1,24 @@
+#! /bin/bash
+
+exec_scenario () {
+	eval ./scenario $@
+}
+
+cleanup () {
+	./$1-execute-all 'for i in $(servald rhizome list | cut -d":" -f3 | tail -n+3);do servald rhizome delete bundle $i; done; '
+}
+
+echo -e "\e[0;32m\e[1;44m# Running Scenario Configurations from $1 #\e[0m"
+
+while read line; do
+	repeat=$(echo $line | cut -d'#' -f2)
+	echo -e "\e[0;32m\e[1;44m# $repeat iterations of ${line:1:2} with the following configuration: #\e[0m"
+	echo -e "\e[0;32m\e[1;44m# $line #\e[0m"
+	while [ $repeat -ge 1 ]; do
+		exec_scenario ${line:0:-3}
+		cleanup $(echo $line | cut -d' ' -f1)
+		repeat=$(( repeat - 1 ))
+		echo -e "\e[0;34m\e[1;42m# Iteration done. Sleeping 1 minute. #\e[0m"
+		sleep 60
+	done
+done < $1

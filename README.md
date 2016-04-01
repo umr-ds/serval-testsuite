@@ -79,6 +79,33 @@ A README would be nice.
 
 All scripts get these parameters when executed:
 
- * $1: Number of nodes in the scenario 
+ * $1: Number of nodes in the scenario
  * $2: Number of *active* nodes
- * $3...: User specified in **p, w or i** 
+ * $3...: User specified in **p, w or i**
+
+# auto-scenario
+To run a scenario multiple times or different scenarios sequentially, you can use the auto-scenario script. The Usage is as follows:
+
+```
+./auto-scenario <config-file>
+```
+
+In the `<config-file>` you have to specify the scenarios you want to run and how often. This is done by simply specifying the command line arguments as you would when using the `scenario` script. To set how often a particular scenario should be executed, set the number after a "`#`".
+
+### Example
+
+Usage
+```
+./auto-scenario auto-scenario.conf
+```
+
+Usage `auto-scenario.conf`
+
+```
+core delayed-files/ "" "f 2" "f 2 f1" 0 #3
+miniworld delayed-messages/ "" "20" "10" 0 #6
+```
+
+In the example presented above, the delayed-files scenario will be executed 3 times in core, and the delayed-messages scenario 6 times in miniworld.
+
+The only thing you have to do is to make sure that core and/or miniworld is running.
