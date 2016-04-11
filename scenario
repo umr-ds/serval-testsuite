@@ -17,14 +17,14 @@ fi
 
 TYPE=$1
 shift
-SCENARIO=$2
+SCENARIO=$1
 shift
 SCENARIO_FOLDER=`readlink -e $SCENARIO`
-PREP_ARGS=$3
+PREP_ARGS=$1
 shift
-WATCH_ARGS=$4
+WATCH_ARGS=$1
 shift
-INIT_ARGS=$5
+INIT_ARGS=$1
 shift
 
 ###Build active nodes array and check if appendix argument is present
