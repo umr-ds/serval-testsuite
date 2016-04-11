@@ -17,7 +17,7 @@ while read line; do
 	echo -e "\e[0;32m\e[1;44m# $repeat iterations of ${line:1:2} with the following configuration: #\e[0m"
 	echo -e "\e[0;32m\e[1;44m# $line #\e[0m"
 	while [ $repeat -ge 1 ]; do
-		exec_scenario ${line:0:-3} -appendix $TIMESTAMP_$repeat
+		exec_scenario ${line:0:-3} -appendix $TIMESTAMP-$repeat
 		cleanup $(echo $line | cut -d' ' -f1)
 		repeat=$(( repeat - 1 ))
 		echo -e "\e[0;34m\e[1;42m# Iteration done. Sleeping 1 minute. #\e[0m"
