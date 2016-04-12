@@ -48,7 +48,7 @@ rm -f $SEVERAL_ALL_SIDS_FILE
 
 # test if scenario is available
 if [ ! -d "$SCENARIO" ]; then
-    echo -e "\e[1;31mError: Scenario does not exist\e[0m"
+    echo -e "\e[1;31mError: Scenario $SCENARIO does not exist\e[0m"
     exit 1
 fi
 echo -e "\e[1;32mRunning Scenario $SCENARIO "
