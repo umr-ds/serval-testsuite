@@ -16,15 +16,20 @@ if [ "$1" = "help" ]; then
 fi
 
 TYPE=$1
+echo "Type is $TYPE"
 shift
 SCENARIO=$1
+echo "Scenario is $SCENARIO"
 shift
 SCENARIO_FOLDER=`readlink -e $SCENARIO`
 PREP_ARGS=$1
+echo "Prep args are $PREP_ARGS"
 shift
 WATCH_ARGS=$1
+echo "Watch args are $WATCH_ARGS"
 shift
 INIT_ARGS=$1
+echo "Init args are $INIT_ARGS"
 shift
 
 ###Build active nodes array and check if appendix argument is present
@@ -97,7 +102,7 @@ if [ "$TYPE" == "core" ]; then
 elif [ "$TYPE" == "miniworld" ]; then
     NODE_CNT=`find /tmp/MiniWorld/ 2> /dev/null | grep "qemu.*sock" | wc -l`
     for N in `seq 1 $NODE_CNT`; do
-        NODES=( "${NODES[@]}" "172.21.$N.1" )
+        NODES=( "${NODES[@]}" "10.0.$N.1" )
     done
     
     if [ "$NODE_CNT" == "0" ]; then
@@ -160,7 +165,7 @@ if [ "$TYPE" == "core" ]; then
 
 elif [ "$TYPE" == "miniworld" ]; then
     echo "        - Setting IP for miniworld_tap interface... (needs sudo)"
-    sudo ifconfig miniworld_tap 172.21.254.1
+    sudo ifconfig miniworld_tap 10.0.254.1
     if [ "$?" != "0" ]; then
         echo -e "\e[1;31mError: Management Interface could not be configured.\e[0m"
         exit 1
