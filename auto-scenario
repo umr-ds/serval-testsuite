@@ -1,14 +1,27 @@
 #! /bin/bash
 
 exec_scenario () {
-        eval ./scenario $@
+    echo "Starting scenario: $@"
+    eval ./scenario $@
 }
 
 cleanup () {
-        ./$1-execute-all 'for i in $(servald rhizome list | cut -d":" -f3 | tail -n+3);do servald rhizome delete bundle $i; done; '
-        if [ $1 = "miniworld" ]; then
-                ./$1-execute-all 'rm -rf /tmp/serval-monitor'
-        fi
+    ./$1-execute-all 'for i in $(servald rhizome list | cut -d":" -f3 | tail -n+3);do servald rhizome delete bundle $i; done; '
+    if [ $1 = "miniworld" ]; then
+        ./$1-execute-all 'rm -rf /tmp/serval-monitor'
+    fi
+}
+
+initialize_miniworld_topology () {
+    (cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCStartScenario.py MiniWorld_Scenarios/serval_paper/$1)
+    return_code=$?
+    echo $return_code
+    return $return_code
+}
+
+finalize_miniworld_topology () {
+    (cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCStopScenario.py)
+    return $?
 }
 
 echo -e "\e[0;32m\e[1;44m# Running Scenario Configurations from $1 #\e[0m"
@@ -16,15 +29,36 @@ echo -e "\e[0;32m\e[1;44m# Running Scenario Configurations from $1 #\e[0m"
 TIMESTAMP=`date +%Y-%m-%d_%H-%M`
 
 while read line; do
-        repeat=$(echo $line | cut -d'#' -f2)
-        echo -e "\e[0;32m\e[1;44m# $repeat iterations of ${line:1:2} with the following configuration: #\e[0m"
-        echo -e "\e[0;32m\e[1;44m# $line #\e[0m"
-        run=1
-        while [ $run -le $repeat ]; do
-                exec_scenario ${line:0:-3} -appendix $TIMESTAMP-$run
-                cleanup $(echo $line | cut -d' ' -f1)
-                run=$(( run + 1 ))
-                echo -e "\e[0;34m\e[1;42m# Iteration done. Sleeping 1 minute. #\e[0m"
-                sleep 60
-        done
+    IFS=" " read -ra line_arr <<< "$line"
+
+    len=${#line_arr[@]}
+    env=${line_arr[0]}
+    scenario=${line_arr[@]:1:$(( len-3 ))}
+    repeat=${line_arr[-2]:1:${#line_arr[-2]}}
+    topology=${line_arr[-1]}
+
+
+    echo -e "\e[0;30m\e[1;44m# $repeat iterations of $scenario on $env using $topology with the following configuration: #\e[0m"
+    echo -e "\e[0;30m\e[1;44m# $line #\e[0m"
+    run=1
+    while [ $run -le $repeat ]; do
+        if [ $env = "miniworld" ]; then
+        	init=$(initialize_miniworld_topology $topology)
+        else
+            init=0
+        fi
+
+        if [ $init -eq 0 ]; then
+            exec_scenario $env $scenario -appendix $TIMESTAMP-run$run
+            cleanup $env
+            run=$(( run + 1 ))
+            if [ $env = "miniworld" ]; then
+                echo -e "\e[0;30m\e[1;42m# Iteration done. Finalizing topology. #\e[0m"
+                finalize_miniworld_topology
+            fi
+        else
+            echo -e "\e[30m\e[1;41m# Initialization failed. #\e[0m"
+            exit
+        fi
+    done
 done < $1
