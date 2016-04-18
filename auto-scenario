@@ -2,7 +2,7 @@
 
 exec_scenario () {
     echo "Starting scenario: $@"
-    eval ./scenario $@
+    (eval ./scenario $@)
 }
 
 cleanup () {
@@ -15,7 +15,6 @@ cleanup () {
 initialize_miniworld_topology () {
     (cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCStartScenario.py MiniWorld_Scenarios/serval_paper/$1)
     return_code=$?
-    echo $return_code
     return $return_code
 }
 
@@ -27,8 +26,9 @@ finalize_miniworld_topology () {
 echo -e "\e[0;32m\e[1;44m# Running Scenario Configurations from $1 #\e[0m"
 
 TIMESTAMP=`date +%Y-%m-%d_%H-%M`
+mapfile -t LINES <$1
 
-while read line; do
+for line in "${LINES[@]}"; do
     IFS=" " read -ra line_arr <<< "$line"
 
     len=${#line_arr[@]}
@@ -42,6 +42,7 @@ while read line; do
     echo -e "\e[0;30m\e[1;44m# $line #\e[0m"
     run=1
     while [ $run -le $repeat ]; do
+	    init=-1
         if [ $env = "miniworld" ]; then
         	init=$(initialize_miniworld_topology $topology)
         else
@@ -61,4 +62,4 @@ while read line; do
             exit
         fi
     done
-done < $1
+done
