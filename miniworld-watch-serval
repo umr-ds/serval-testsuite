@@ -6,13 +6,13 @@ fi
 
 NODE_CNT=`find /tmp/MiniWorld/ 2> /dev/null | grep "qemu.*sock" | wc -l`
 for N in `seq 1 $NODE_CNT`; do
-    NODES=( "${NODES[@]}" "10.0.$N.1" )
+    NODES=( "${NODES[@]}" "172.21.0.$N" )
 done
 
 SSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=QUIET -o User=root"
 
 echo "Setting IP for miniworld_tap interface... (needs sudo)"
-sudo ifconfig miniworld_tap 10.0.254.1
+sudo ifconfig miniworld_tap 172.21.254.1
 
 while [ true ]; do
     for N in `seq -s " " 0 $(($NODE_CNT - 1))`; do

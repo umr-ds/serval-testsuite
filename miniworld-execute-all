@@ -9,10 +9,10 @@ NODE_CNT=`find /tmp/MiniWorld/ 2> /dev/null | grep "qemu.*sock" | wc -l`
 SSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=QUIET -o User=root"
 
 echo "Setting IP for miniworld_tap interface... (needs sudo)"
-sudo ifconfig miniworld_tap 10.0.254.1
+sudo ifconfig miniworld_tap 172.21.254.1
 
 for N in `seq 1 $NODE_CNT`; do
-    NODE="10.0.$N.1"
+    NODE="172.21.0.$N"
 	echo '# HOST:' $NODE
     ssh $SSH_OPTIONS $NODE ". .profile; $@"
 done
