@@ -16,20 +16,15 @@ if [ "$1" = "help" ]; then
 fi
 
 TYPE=$1
-echo "Type is $TYPE"
 shift
 SCENARIO=$1
-echo "Scenario is $SCENARIO"
 shift
 SCENARIO_FOLDER=`readlink -e $SCENARIO`
 PREP_ARGS=$1
-echo "Prep args are $PREP_ARGS"
 shift
 WATCH_ARGS=$1
-echo "Watch args are $WATCH_ARGS"
 shift
 INIT_ARGS=$1
-echo "Init args are $INIT_ARGS"
 shift
 
 ###Build active nodes array and check if appendix argument is present
@@ -220,10 +215,13 @@ if [ "$TYPE" == "miniworld" ]; then
 fi
 
 ### PHASE 3.2
-if [ "$TYPE" == "core" ]; then
-    echo -n -e "\e[1;34m        - Initiating scan for other servald instances\e[0m"
-    exec_seq "$ALL_NODES" 'for i in `ifconfig | grep "inet addr" | grep -v "127.0.0" | cut -d":" -f 2 | cut -d"." -f1,2,3`; do echo -n "$i.255: "; servald scan $i.255; done; exit 0'
-fi
+#if [ "$TYPE" == "core" ]; then
+#    echo -n -e "\e[1;34m        - Initiating scan for other servald instances\e[0m"
+#    exec_seq "$ALL_NODES" 'for i in `ifconfig | grep "inet addr" | grep -v "127.0.0" | cut -d":" -f 2 | cut -d"." -f1,2,3`; do echo -n "$i.255: "; servald scan $i.255; done; exit 0'
+#elif [ "$TYPE" == "miniworld" ]; then
+#    echo -n -e "\e[1;34m        - Initiating scan for other servald instances\e[0m"
+#    exec_seq "$ALL_NODES" 'for i in `ifconfig | grep -A2 "eth" | grep "Bcast" | cut -d":" -f 2 | cut -d" " -f 1`; do echo -n "$i: "; servald scan $i; done; exit 0'
+#fi
 
 ### PHASE 4
 echo -n -e "\e[1;34mPhase 4 - Starting servald monitoring\e[0m"
