@@ -1,5 +1,12 @@
 #! /bin/bash
 
+rpc_runloop_exception_handler () {
+    echo "Exception occured on RPC runloop. See <file> for more information."
+    echo "Aborting scenario test!"
+    (/root/miniworld/MiniWorld/cleanup.sh)&
+    exit
+}
+
 exec_scenario () {
     echo "Starting scenario: $@"
     (eval ./scenario $@)
@@ -15,13 +22,16 @@ cleanup () {
 initialize_miniworld_topology () {
     (cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCStartScenario.py MiniWorld_Scenarios/serval_paper/$1)
     return_code=$?
-    return $return_code
+    echo $return_code
 }
 
 finalize_miniworld_topology () {
-    (cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCStopScenario.py)
+    pkill -fe RPCServer.py
+    #(cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCStopScenario.py)
     return $?
 }
+
+trap rpc_runloop_exception_handler SIGSTOP
 
 echo -e "\e[0;32m\e[1;44m# Running Scenario Configurations from $1 #\e[0m"
 
@@ -29,14 +39,19 @@ TIMESTAMP=`date +%Y-%m-%d_%H-%M`
 mapfile -t LINES <$1
 
 for line in "${LINES[@]}"; do
+    OLDIFS=$IFS
     IFS=" " read -ra line_arr <<< "$line"
 
     len=${#line_arr[@]}
     env=${line_arr[0]}
     scenario=${line_arr[@]:1:$(( len-3 ))}
+    params=${line_arr[@]:2:$(( len-3 ))}
     repeat=${line_arr[-2]:1:${#line_arr[-2]}}
     topology=${line_arr[-1]}
 
+    IFS='" "' read -r -a params_arr <<< "$params"
+
+    IFS=$OLDSIFS
 
     echo -e "\e[0;30m\e[1;44m# $repeat iterations of $scenario on $env using $topology with the following configuration: #\e[0m"
     echo -e "\e[0;30m\e[1;44m# $line #\e[0m"
@@ -45,17 +60,35 @@ for line in "${LINES[@]}"; do
 	    init=-1
         if [ $env = "miniworld" ]; then
         	init=$(initialize_miniworld_topology $topology)
+                echo -e "\e[0;32m\e[1;44m# Starting RPC runloop watcher #\e[0m"
+                (python /root/miniworld/MiniWorld/miniworld/rpc/RPCCheckErrors.py -p $$ -t /root/miniworld/Miniworld/traceback.log MiniWorld_Scenarios/serval_paper/scenario_chain_64n.json)&
+                WATCHER_PID=$!
         else
             init=0
         fi
 
+	declare -a params_arr=($params)
+
+	if [ -n params_arr[0] ]; then
+		params_arr[0]="P-${params_arr[0]// /_}"
+	fi
+
+	if [ -n params_arr[1] ]; then
+		params_arr[1]="W-${params_arr[1]// /_}"
+	fi
+
+	if [ -n params_arr[2] ]; then
+   		params_arr[2]="I-${params_arr[2]// /_}"
+	fi
+
         if [ $init -eq 0 ]; then
-            exec_scenario $env $scenario -appendix $TIMESTAMP-run$run
+            exec_scenario $env $scenario -appendix $TIMESTAMP-`printf "%s" ${params_arr[@]}`_on_$topology-run`printf "%03g" $run`
             cleanup $env
             run=$(( run + 1 ))
             if [ $env = "miniworld" ]; then
                 echo -e "\e[0;30m\e[1;42m# Iteration done. Finalizing topology. #\e[0m"
                 finalize_miniworld_topology
+                kill $WATCHER_PID
             fi
         else
             echo -e "\e[30m\e[1;41m# Initialization failed. #\e[0m"
