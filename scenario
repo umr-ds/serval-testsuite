@@ -194,7 +194,7 @@ exec_par "$ALL_NODES" "/serval-tests/monitor system"
 
 ## PHASE 3
 echo -n -e "\e[1;34mPhase 3 - Generating SIDs and starting servald\e[0m"
-exec_par "$ALL_NODES" "export HOST=`hostname | cut -d u -f2`; printf 'Host %i - %02x - ' $HOST $((16+$HOST)); servald keyring add '' `printf '%2x' $((16+$HOST))`; servald start > /dev/null; sleep 2"
+exec_par "$ALL_NODES" 'export HOST=`hostname | cut -d u -f2`; printf "Host %i - %02x - " $HOST $((16 + $HOST)); servald keyring add "" `printf "%2x" $((16+$HOST))`; servald start > /dev/null; sleep 2'
 
 ## PHASE 3.1
 echo -n -e "\e[1;34m        - Collecting serval sids\e[0m"
