@@ -60,26 +60,26 @@ for line in "${LINES[@]}"; do
 	    init=-1
         if [ $env = "miniworld" ]; then
         	init=$(initialize_miniworld_topology $topology)
-                echo -e "\e[0;32m\e[1;44m# Starting RPC runloop watcher #\e[0m"
-                (python /root/miniworld/MiniWorld/miniworld/rpc/RPCCheckErrors.py -p $$ -t /root/miniworld/Miniworld/traceback.log MiniWorld_Scenarios/serval_paper/scenario_chain_64n.json)&
-                WATCHER_PID=$!
+            echo -e "\e[0;32m\e[1;44m# Starting RPC runloop watcher #\e[0m"
+            (python /root/miniworld/MiniWorld/miniworld/rpc/RPCCheckErrors.py -p $$ -t /root/miniworld/Miniworld/traceback.log MiniWorld_Scenarios/serval_paper/scenario_chain_64n.json)&
+            WATCHER_PID=$!
         else
             init=0
         fi
 
-	declare -a params_arr=($params)
+	    declare -a params_arr=($params)
 
-	if [ -n params_arr[0] ]; then
-		params_arr[0]="P-${params_arr[0]// /_}"
-	fi
+	    if [ -n params_arr[0] ]; then
+		    params_arr[0]="P-${params_arr[0]// /_}"
+	    fi
 
-	if [ -n params_arr[1] ]; then
-		params_arr[1]="W-${params_arr[1]// /_}"
-	fi
+	    if [ -n params_arr[1] ]; then
+		    params_arr[1]="W-${params_arr[1]// /_}"
+	    fi
 
-	if [ -n params_arr[2] ]; then
-   		params_arr[2]="I-${params_arr[2]// /_}"
-	fi
+	    if [ -n params_arr[2] ]; then
+   		    params_arr[2]="I-${params_arr[2]// /_}"
+	    fi
 
         if [ $init -eq 0 ]; then
             exec_scenario $env $scenario -appendix $TIMESTAMP-`printf "%s" ${params_arr[@]}`_on_$topology-run`printf "%03g" $run`
