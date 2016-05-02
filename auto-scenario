@@ -59,9 +59,9 @@ for line in "${LINES[@]}"; do
     while [ $run -le $repeat ]; do
 	    init=-1
         if [ $env = "miniworld" ]; then
-        	init=$(initialize_miniworld_topology $topology)
+            init=$(initialize_miniworld_topology $topology)
             echo -e "\e[0;32m\e[1;44m# Starting RPC runloop watcher #\e[0m"
-            (python /root/miniworld/MiniWorld/miniworld/rpc/RPCCheckErrors.py -p $$ -t /root/miniworld/Miniworld/traceback.log MiniWorld_Scenarios/serval_paper/scenario_chain_64n.json)&
+            (cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCCheckErrors.py -p $$ -t /root/miniworld/Miniworld/traceback.log MiniWorld_Scenarios/serval_paper/scenario_chain_64n.json)&
             WATCHER_PID=$!
         else
             init=0
