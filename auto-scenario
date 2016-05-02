@@ -1,9 +1,11 @@
 #! /bin/bash
 
+MINIWORLD_TRACEBACK_PATH=/root/miniworld/MiniWorld/miniworld_traceback.log
+
 rpc_runloop_exception_handler () {
-    echo "Exception occured on RPC runloop. See <file> for more information."
+    echo "Exception occured on RPC runloop. See '$MINIWORLD_TRACEBACK_PATH' for more information."
+    cat $MINIWORLD_TRACEBACK_PATH
     echo "Aborting scenario test!"
-    (/root/miniworld/MiniWorld/cleanup.sh)&
     exit
 }
 
@@ -31,7 +33,9 @@ finalize_miniworld_topology () {
     return $?
 }
 
-trap rpc_runloop_exception_handler SIGSTOP
+trap rpc_runloop_exception_handler SIGUSR1
+MAIN_PROCESS_PID=$$
+echo "MAIN_PROCESS_PID: $MAIN_PROCESS_PID"
 
 echo -e "\e[0;32m\e[1;44m# Running Scenario Configurations from $1 #\e[0m"
 
@@ -61,7 +65,7 @@ for line in "${LINES[@]}"; do
         if [ $env = "miniworld" ]; then
             init=$(initialize_miniworld_topology $topology)
             echo -e "\e[0;32m\e[1;44m# Starting RPC runloop watcher #\e[0m"
-            (cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCCheckErrors.py -p $$ -t /root/miniworld/Miniworld/traceback.log MiniWorld_Scenarios/serval_paper/scenario_chain_64n.json)&
+            (cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCCheckErrors.py -pg $MAIN_PROCESS_PID -t $MINIWORLD_TRACEBACK_PATH -s 10 MiniWorld_Scenarios/serval_paper/scenario_chain_64n.json)&
             WATCHER_PID=$!
         else
             init=0
