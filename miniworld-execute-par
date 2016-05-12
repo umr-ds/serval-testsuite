@@ -1,7 +1,7 @@
 #! /bin/bash
 if [ "$1" = "-h" ]; then
     echo "usage: $0 [...]"
-    echo "watches servald on every miniworld node, and fires errors"
+    echo "executes one command on every miniworld node via ssh"
 fi
 
 NODE_CNT=`find /tmp/MiniWorld/ 2> /dev/null | grep "qemu.*sock" | wc -l`
