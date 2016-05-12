@@ -15,10 +15,10 @@ exec_scenario () {
 }
 
 cleanup () {
-    ./$1-execute-all 'for i in $(servald rhizome list | cut -d":" -f3 | tail -n+3);do servald rhizome delete bundle $i; done; '
-    if [ $1 = "miniworld" ]; then
-        ./$1-execute-all 'rm -rf /tmp/serval-monitor'
-    fi
+    # ./$1-execute-all 'for i in $(servald rhizome list | cut -d":" -f3 | tail -n+3);do servald rhizome delete bundle $i; done; '
+    # if [ $1 = "miniworld" ]; then
+        # ./$1-execute-all 'rm -rf /tmp/serval-monitor'
+    # fi
 }
 
 initialize_miniworld_topology () {
