@@ -15,12 +15,11 @@ PIDS=""
 FAIL="0"
 for N in `seq 1 $NODE_CNT`; do
     NODE="172.21.0.$N"
-    ssh $SSH_OPTIONS $NODE ". .profile; $@" 1>&2 &
+    ssh $SSH_OPTIONS $NODE ". .profile;  echo  \"$N :\"  \`$@\`" 1>&2 &
     PIDS="$PIDS $!"
 done
 
 for PID in $PIDS; do
     wait $PID; let "FAIL=$?"
-    if [ "$FAIL" = "0" ]; then printf .;
-    else printf $FAIL; fi
+    if [ "$FAIL" != "0" ]; then printf $FAIL; fi
 done
