@@ -1,0 +1,26 @@
+#! /bin/bash
+if [ "$1" = "-h" ]; then
+    echo "usage: $0 [...]"
+    echo "watches servald on every miniworld node, and fires errors"
+fi
+
+NODE_CNT=`find /tmp/MiniWorld/ 2> /dev/null | grep "qemu.*sock" | wc -l`
+
+SSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=QUIET -o User=root"
+
+echo "Setting IP for miniworld_tap interface... (needs sudo)"
+sudo ifconfig miniworld_tap 172.21.254.1
+
+PIDS=""
+FAIL="0"
+for N in `seq 1 $NODE_CNT`; do
+    NODE="172.21.0.$N"
+    ssh $SSH_OPTIONS $NODE ". .profile; $@" 1>&2 &
+    PIDS="$PIDS $!"
+done
+
+for PID in $PIDS; do
+    wait $PID; let "FAIL=$?"
+    if [ "$FAIL" = "0" ]; then printf .;
+    else printf $FAIL; fi
+done

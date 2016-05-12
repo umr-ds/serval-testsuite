@@ -1,0 +1,17 @@
+#! /bin/bash
+if [ "$1" = "-h" ]; then
+    echo "usage: $0 <i>"
+    echo "opens shell miniworld node with index"
+fi
+
+NODE_CNT=`find /tmp/MiniWorld/ 2> /dev/null | grep "qemu.*sock" | wc -l`
+
+SSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=QUIET -o User=root"
+
+echo "Setting IP for miniworld_tap interface... (needs sudo)"
+sudo ifconfig miniworld_tap 172.21.254.1
+
+
+NODE="172.21.0.$1"
+echo "Connecting to $NODE"
+ssh $SSH_OPTIONS $NODE
