@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#TIMEOUT_S="500"
+#TIMEOUT_S="1200"
 #LATER=$((`date +%s` + $TIMEOUT_S))
 HOSTNAME=`hostname`
 

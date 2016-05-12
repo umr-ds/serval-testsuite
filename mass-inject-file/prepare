@@ -1,7 +1,7 @@
 #!/bin/sh
 
 HOSTNAME=`hostname`
-TESTFILE_PATH="/tmp/serval-testfiles"
+TESTFILE_PATH="/root/tmp/serval-testfiles"
 mkdir -p $TESTFILE_PATH
 rm -rf $TESTFILE_PATH/*
 
