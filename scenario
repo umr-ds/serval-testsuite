@@ -189,7 +189,10 @@ echo -n -e "\e[1;34mPhase 1 - Prepare: $SCENARIO_FOLDER/prepare $NODE_CNT $ACTIV
 exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/prepare $NODE_CNT $ACTIVE_NODE_CNT $PREP_ARGS"
 
 ### PHASE 2
-echo -n -e "\e[1;34mPhase 2 - Starting system monitoring\e[0m"
+echo -n -e "\e[1;34mPhase 2 - Syncing qemu clocks\e[0m"
+exec_par "$ALL_NODES" "/etc/init.d/sysntpd stop; killall ntpd; ntpd -c /etc/ntp.conf -q"
+
+echo -n -e "\e[1;34m        - Starting system monitoring\e[0m"
 exec_par "$ALL_NODES" "/serval-tests/monitor system"
 
 ## PHASE 3
