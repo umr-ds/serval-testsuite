@@ -232,6 +232,11 @@ fi
 echo -n -e "\e[1;34mPhase 4 - Starting servald monitoring\e[0m"
 exec_par "$ALL_NODES" "/serval-tests/monitor serval"
 
+for iface in $(ifconfig | grep br | cut -d' ' -f1); do
+    ./netmon.py $iface >> /tmp/netmon_$iface.csv &
+    NMON_PIDS="$NMON_PIDS $!"
+done
+
 ### PHASE 5
 # using trap to kill running vcmds
 trap "kill $AGENTS 2> /dev/null; echo Killed agents; exit" SIGINT SIGTERM
@@ -264,7 +269,9 @@ fi
 ### PHASE 8
 echo -n -e "\e[1;34mPhase 8 - Teardown\e[0m"
 exec_par "$ALL_NODES" "/serval-tests/monitor stop; servald stop > /dev/null"
-
+for NPID in $NMON_PIDS; do
+    kill $NPID
+done
 
 ### PHASE 9
 echo -n -e "\e[1;34mPhase 9 - Data Collection: \e[0m"
@@ -276,7 +283,7 @@ elif [ "$TYPE" == "miniworld" ]; then
     LOG_FOLDER=/tmp/serval-monitor
     LOCAL_LOG_FOLDER=${LOG_FOLDER}-miniworld
     mkdir -p $LOCAL_LOG_FOLDER
-    
+
     PIDS=""
     FAIL="0"
     for NODE in ${NODES[@]}; do
@@ -288,6 +295,7 @@ elif [ "$TYPE" == "miniworld" ]; then
         printf .
         if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 1; fi
     done
+    find /tmp/ -maxdepth 1 -type f -name netmon*.csv -exec mv -t $LOCAL_LOG_FOLDER/$SCENARIO-$APPENDIX {} \+
     ./tidy_recursive $LOCAL_LOG_FOLDER/$SCENARIO-$APPENDIX
     echo
 
