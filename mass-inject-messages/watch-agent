@@ -38,7 +38,8 @@ while [ true ]; do
         # Get SID of active node
         SENDER=$( servald meshms list conversations $SID | tail -n 1 | awk '{split($0,a,":"); print a[2]}')
         # Check if node received the specified number of messages from the active node
-        if [ $(servald meshms list messages $SID $SENDER | wc -l) -eq $(( $NUMBER_OF_HEADER_LINES+$NUMBER_OF_MESSAGES )) ]; then
+        if [ $(servald meshms list messages $SID $SENDER | wc -l) -ge $(( $NUMBER_OF_HEADER_LINES+$NUMBER_OF_MESSAGES )) ]; then
+            ## -eq SHOULD be perfectly fine in this if, in some cases messages are sent multiple times.
             echo "$HOSTNAME finished"
             exit 0
         fi
