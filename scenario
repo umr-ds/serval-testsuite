@@ -16,26 +16,22 @@ if [ "$1" = "help" ]; then
 fi
 
 TYPE=$1
-shift
-SCENARIO=$1
-shift
+SCENARIO=$2
 SCENARIO_FOLDER=`readlink -e $SCENARIO`
-PREP_ARGS=$1
-shift
-WATCH_ARGS=$1
-shift
-INIT_ARGS=$1
-shift
+PREP_ARGS=$3
+WATCH_ARGS=$4
+INIT_ARGS=$5
 
 ###Build active nodes array and check if appendix argument is present
-while test $# -gt 0; do
-    if [ "$1" = "-appendix" ]; then
-        shift
-        APPENDIX="$1"
-    else
-        ACTIVE_NODES+=($1)
+VARARGS=(${@:6})
+for i in "${!VARARGS[@]}"; do 
+    if [ "${VARARGS[$i]}" = "-appendix" ]; then
+        i=$((i+1))
+        APPENDIX="${VARARGS[$i]}"
+        break
     fi
-    shift
+    
+    ACTIVE_NODES="$ACTIVE_NODES ${VARARGS[$i]}"
 done
 
 if [ -z ${APPENDIX+x} ]; then
@@ -146,7 +142,7 @@ fi
 ALL_NODES=`seq -s " " 0 $(($NODE_CNT - 1))`
 
 # replacing -a option for all nodes
-if [ "$6" = "-a" ]; then ACTIVE_NODES="$ALL_NODES"; fi
+if [ "$ACTIVE_NODES" = " -a" ]; then ACTIVE_NODES="$ALL_NODES"; fi
 ACTIVE_NODE_CNT=`echo $ACTIVE_NODES | wc -w`
 echo -n -e "  Active: ${ACTIVE_NODES[@]}"
 echo -e "\e[0m\n"
