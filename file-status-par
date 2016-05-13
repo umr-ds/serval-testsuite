@@ -1,0 +1,36 @@
+#! /bin/bash
+if [ "$1" = "-h" ]; then
+    echo "usage: $0 [...]"
+    echo "executes one command on every miniworld node via ssh"
+fi
+
+NODE_CNT=`find /tmp/MiniWorld/ 2> /dev/null | grep "qemu.*sock" | wc -l`
+
+SSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=QUIET -o User=root"
+
+#echo "Setting IP for miniworld_tap interface... (needs sudo)"
+sudo ifconfig miniworld_tap 172.21.254.1
+
+declare -A getPIDs
+declare -A results
+
+PIDS=""
+FAIL="0"
+for N in `seq 1 $NODE_CNT`; do
+    NODE="172.21.0.$N"
+    ssh $SSH_OPTIONS $NODE ". .profile; servald rhizome list | grep :file: | wc -l" &
+    PID=$!
+    PIDS="$PIDS $PID"
+    getPIDs[$PID]=$N
+done
+
+for PID in $PIDS; do
+    wait $PID; let "FAIL=$?"
+    if [ "$FAIL" = "0" ]; then 
+        printf "";
+    else
+        echo $PID
+	echo ${getPIDs[$PID]}
+        echo "${getPIDs[$PID]}: $FAIL"
+    fi
+done

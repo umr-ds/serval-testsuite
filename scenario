@@ -288,6 +288,7 @@ elif [ "$TYPE" == "miniworld" ]; then
         printf .
         if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 1; fi
     done
+    ./tidy_recursive $LOCAL_LOG_FOLDER/$SCENARIO-$APPENDIX
     echo
 
 fi
