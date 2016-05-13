@@ -23,10 +23,10 @@ exec_scenario () {
 }
 
 cleanup () {
-    # ./$1-execute-all 'for i in $(servald rhizome list | cut -d":" -f3 | tail -n+3);do servald rhizome delete bundle $i; done; '
-    # if [ $1 = "miniworld" ]; then
-        # ./$1-execute-all 'rm -rf /tmp/serval-monitor'
-    # fi
+    ./$1-execute-all 'for i in $(servald rhizome list | cut -d":" -f3 | tail -n+3);do servald rhizome delete bundle $i; done; '
+    if [ $1 = "miniworld" ]; then
+        ./$1-execute-all 'rm -rf /tmp/serval-monitor'
+    fi
 }
 
 initialize_miniworld_topology () {
@@ -79,20 +79,20 @@ for line in "${LINES[@]}"; do
             init=0
         fi
 	    if [ -n params_arr[0] ]; then
-		    P="P-${params_arr[0]// /_}"
+		    P="P-${params_arr[0]// /_}_"
 	    fi
 
 	    if [ -n params_arr[1] ]; then
-		    W="W-${params_arr[1]// /_}"
+		    W="W-${params_arr[1]// /_}_"
 	    fi
 
 	    if [ -n params_arr[2] ]; then
-   		    I="I-${params_arr[2]// /_}"
+   		    I="I-${params_arr[2]// /_}_"
 	    fi
 
         if [ $init -eq 0 ]; then
-            exec_scenario $env $scenario -appendix $TIMESTAMP-`printf "%s_" $P``printf "%s_"$W``printf "%s_" $I`on_$topology-run`printf "%03g" $run`
-            cleanup $env
+            exec_scenario $env $scenario -appendix $TIMESTAMP-`printf "%s" $P``printf "%s"$W``printf "%s" $I`on_$topology-run`printf "%03g" $run`
+            #cleanup $env
             run=$(( run + 1 ))
             if [ $env = "miniworld" ]; then
                 echo -e "\e[0;30m\e[1;42m# Iteration done. Finalizing topology. #\e[0m"
@@ -100,7 +100,7 @@ for line in "${LINES[@]}"; do
             fi
             scenarioname=${line_arr[1]}
             mkdir -p /tmp/serval-monitor-miniworld/$TIMESTAMP-$scenarioname
-            find /tmp/serval-monitor-miniworld -type d -name $scenarioname-$TIMESTAMP* -exec mv -t /tmp/serval-monitor-miniworld/$TIMESTAMP-$scenarioname {} \+
+            find /tmp/serval-monitor-miniworld -maxdepth 1 -type d -name $scenarioname-$TIMESTAMP* -exec mv -t /tmp/serval-monitor-miniworld/$TIMESTAMP-$scenarioname {} \+
         else
             echo -e "\e[30m\e[1;41m# Initialization failed. #\e[0m"
             exit
