@@ -171,7 +171,7 @@ elif [ "$TYPE" == "miniworld" ]; then
     FAIL="0"
     
     for N in $ALL_NODES; do
-        ssh $SSH_OPTIONS ${NODES[$N]} "echo qemu$(($N + 1)) > /proc/sys/kernel/hostname; mkdir -p $SCENARIO_FOLDER" \
+        ssh $SSH_OPTIONS ${NODES[$N]} "printf 'qemu%0.3i' $(($N + 1)) > /proc/sys/kernel/hostname; mkdir -p $SCENARIO_FOLDER" \
             && scp -q -r $SSH_OPTIONS $SCENARIO_FOLDER/* ${NODES[$N]}:$SCENARIO_FOLDER &
         PIDS="$PIDS $!"
     done
