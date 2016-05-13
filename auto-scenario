@@ -50,6 +50,10 @@ echo -e "\e[0;32m\e[1;44m# Running Scenario Configurations from $1 #\e[0m"
 TIMESTAMP=`date +%Y-%m-%d_%H-%M`
 mapfile -t LINES <$1
 
+
+mkdir -p /tmp/serval-monitor-miniworld
+mkdir -p /tmp/serval-monitor-miniworld/${TIMESTAMP}_${1}
+
 for line in "${LINES[@]}"; do
     OLDIFS=$IFS
     IFS=" " read -ra line_arr <<< "$line"
@@ -79,19 +83,21 @@ for line in "${LINES[@]}"; do
             init=0
         fi
 	    if [ -n params_arr[0] ]; then
-		    P="P-${params_arr[0]// /_}_"
+		    P="P-${params_arr[0]// /_}"
 	    fi
 
 	    if [ -n params_arr[1] ]; then
-		    W="W-${params_arr[1]// /_}_"
+		    W="W-${params_arr[1]// /_}"
 	    fi
 
 	    if [ -n params_arr[2] ]; then
-   		    I="I-${params_arr[2]// /_}_"
+   		    I="I-${params_arr[2]// /_}"
 	    fi
 
         if [ $init -eq 0 ]; then
-            exec_scenario $env $scenario -appendix $TIMESTAMP-`printf "%s" $P``printf "%s"$W``printf "%s" $I`on_$topology-run`printf "%03g" $run`
+            run_timestamp=`date +%Y-%m-%d_%H-%M`
+            appendix=${run_timestamp}_${topology}_run_`printf "%03g" $run`
+            exec_scenario $env $scenario -appendix $appendix
             #cleanup $env
             run=$(( run + 1 ))
             if [ $env = "miniworld" ]; then
@@ -99,8 +105,9 @@ for line in "${LINES[@]}"; do
                 finalize_miniworld_topology
             fi
             scenarioname=${line_arr[1]}
-            mkdir -p /tmp/serval-monitor-miniworld/$TIMESTAMP-$scenarioname
-            find /tmp/serval-monitor-miniworld -maxdepth 1 -type d -name $scenarioname-$TIMESTAMP* -exec mv -t /tmp/serval-monitor-miniworld/$TIMESTAMP-$scenarioname {} \+
+            mkdir -p /tmp/serval-monitor-miniworld/${TIMESTAMP}_${1}/$scenarioname
+            find /tmp/serval-monitor-miniworld -maxdepth 1 -type d -name $scenarioname-$run_timestamp* -exec mv -t /tmp/serval-monitor-miniworld/${TIMESTAMP}_${1}/$scenarioname {} \+
+            echo "$P $W $I" > /tmp/serval-monitor-miniworld/${TIMESTAMP}_${1}/$scenarioname/$scenarioname-$appendix/parameters.txt
         else
             echo -e "\e[30m\e[1;41m# Initialization failed. #\e[0m"
             exit
