@@ -14,6 +14,7 @@ if [ "$1" = "-h" ] || [ "$#" -lt 2 ]; then
     echo "    3: no nodes found"
     echo "    4: simulation type not supported"
     echo "    10-19: error in Phase 0-9"
+    echo "    130: script killed by ctrl-c"
     exit
 fi
 
@@ -120,7 +121,7 @@ elif [ "$TYPE" == "miniworld" ]; then
             printf .
             # Activate line to investigate bugs caused by "shrinked" scenarios
             # if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; echo "Time to investigate!"; sleep 300; exit 10; fi
-            if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 1; fi
+            if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit $PHASE; fi
         done
         echo
     }
@@ -154,6 +155,7 @@ echo -e "\e[0m\n"
 
 ### Phase 0
 echo -e "\e[1;34mPhase 0 - Preconditions\e[0m"
+export PHASE=10
 
 if [ "$TYPE" == "core" ]; then
     echo "        - no preconditions needed for core"
@@ -163,7 +165,7 @@ elif [ "$TYPE" == "miniworld" ]; then
     sudo ifconfig miniworld_tap 172.21.254.1
     if [ "$?" != "0" ]; then
         echo -e "\e[1;31mError: Management Interface could not be configured.\e[0m"
-        exit 10
+        exit $PHASE
     fi
 
     echo -n "        - setting hostnames; copying scenario scripts"
@@ -178,17 +180,19 @@ elif [ "$TYPE" == "miniworld" ]; then
     for PID in $PIDS; do
         wait $PID || let "FAIL=$?"
         printf .
-        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 10; fi
+        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit $PHASE; fi
     done
     echo
 fi
 
 
 ### PHASE 1
+export PHASE=11
 echo -n -e "\e[1;34mPhase 1 - Prepare: $SCENARIO_FOLDER/prepare $NODE_CNT $ACTIVE_NODE_CNT $PREP_ARGS\e[0m"
 exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/prepare $NODE_CNT $ACTIVE_NODE_CNT $PREP_ARGS"
 
 ### PHASE 2
+export PHASE=12
 echo -n -e "\e[1;34mPhase 2 - Syncing qemu clocks\e[0m"
 exec_par "$ALL_NODES" "/etc/init.d/sysntpd stop; killall ntpd; ntpd -c /etc/ntp.conf -q > /dev/null"
 
@@ -196,6 +200,7 @@ echo -n -e "\e[1;34m        - Starting system monitoring\e[0m"
 exec_par "$ALL_NODES" "/serval-tests/monitor system"
 
 ## PHASE 3
+export PHASE=13
 echo -n -e "\e[1;34mPhase 3 - Generating SIDs and starting servald\e[0m"
 # exec_par "$ALL_NODES" 'export HOST=`hostname | cut -d u -f2`; printf "Host %i - %02x - " $HOST $((16 + $HOST)); servald keyring add "" `printf "%2x" $((16+$HOST))`; servald start > /dev/null; sleep 2'
 exec_par "$ALL_NODES" 'export HOST=`hostname | cut -d u -f2 | sed -e "s/^0*//g"`; servald keyring add "" `printf "%2x" $((16+$HOST))` > /dev/null; servald start > /dev/null; sleep 2'
@@ -214,7 +219,7 @@ if [ "$TYPE" == "miniworld" ]; then
     for PID in $MYPIDS; do
         wait $PID || let "FAIL=$?"
         printf .
-        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 13; fi
+        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit $PHASE; fi
     done
     echo
 fi
@@ -229,17 +234,19 @@ fi
 #fi
 
 ### PHASE 4
+export PHASE=14
 echo -n -e "\e[1;34mPhase 4 - Starting servald monitoring\e[0m"
 exec_par "$ALL_NODES" "/serval-tests/monitor serval"
 
 for iface in $(ifconfig | grep br | cut -d' ' -f1); do
     ./netmon.py $iface >> /tmp/netmon_$iface.csv &
-    NMON_PIDS="$NMON_PIDS $!"
+    NETMONS="$NETMONS $!"
 done
 
 ### PHASE 5
+export PHASE=15
 # using trap to kill running vcmds
-trap "kill $AGENTS $NMON_PIDS 2> /dev/null; rm /tmp/netmon*.csv; echo Killed agents and netmons; exit" SIGINT SIGTERM
+trap "kill $AGENTS $NETMONS 2> /dev/null; rm /tmp/netmon*.csv; echo Killed agents and netmons; exit 130" SIGINT SIGTERM
 
 echo -n -e "\e[1;34mPhase 5 - Starting watch-agents: $SCENARIO_FOLDER/watch-agent $NODE_CNT $ACTIVE_NODE_CNT $WATCH_ARGS\e[0m"
 for NODE in `seq 0 $(($NODE_CNT - 1))`; do
@@ -250,10 +257,12 @@ done
 echo
 
 ### PHASE 6
+export PHASE=16
 echo -n -e "\e[1;34mPhase 6 - Initiating Scenario: $SCENARIO_FOLDER/initiate $NODE_CNT $ACTIVE_NODE_CNT $INIT_ARGS\e[0m"
 exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/initiate $NODE_CNT $ACTIVE_NODE_CNT $INIT_ARGS"
 
 ### PHASE 7
+export PHASE=17
 echo -e "\e[1;34mPhase 7 - Waiting for agents:\e[0m"
 for PID in $AGENTS; do
     wait $PID || echo "  Watch-Agent $PID failed ($?)."
@@ -267,13 +276,15 @@ if [ "$FAIL" == "0" ]; then
 fi
 
 ### PHASE 8
-echo -n -e "\e[1;34mPhase 8 - Teardown\e[0m"
+export PHASE=18
+echo -n -e "\e[1;34mPhase 8 - Stopping monitoring\e[0m"
 exec_par "$ALL_NODES" "/serval-tests/monitor stop; servald stop > /dev/null"
-for NPID in $NMON_PIDS; do
-    kill $NPID
-done
+echo -n -e "\e[1;34m        - Stopping netmons\e[0m"
+for PID in $NETMONS; do kill $PID; printf .; done
+echo
 
 ### PHASE 9
+export PHASE=19
 echo -n -e "\e[1;34mPhase 9 - Data Collection: \e[0m"
 if [ "$TYPE" == "core" ]; then
     echo "not needed in core, check /tmp/serval-monitor"
@@ -297,7 +308,7 @@ elif [ "$TYPE" == "miniworld" ]; then
     for PID in $PIDS; do
         wait $PID || let "FAIL=$?"
         printf .
-        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 19; fi
+        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit $PHASE; fi
     done
     mv /tmp/netmon*.csv $LOCAL_LOG_FOLDER
     echo
