@@ -53,6 +53,13 @@ finalize_miniworld_topology () {
     return $?
 }
 
+beautify_params () {
+    for param in "$@"; do
+        ret=$ret`eval echo $param- | sed "s/f /f./g; s/\ //g"`
+    done
+    echo -$ret
+}
+
 trap rpc_runloop_exception_handler SIGUSR1
 MAIN_PROCESS_PID=$$
 echo -e "\e[37m\e[44m# Autorunning scenario configurations from $1, pid: $MAIN_PROCESS_PID\e[0m"
@@ -69,13 +76,9 @@ for line in "${LINES[@]}"; do
     len=${#line_arr[@]}
     env=${line_arr[0]}
     scenario=${line_arr[@]:1:$(( len-3 ))}
-    params=${line_arr[@]:2:$(( len-3 ))}
+    params=${line_arr[@]:2:$(( len-4 ))}
     repeat=${line_arr[-2]:1:${#line_arr[-2]}}
     topology=${line_arr[-1]}
-
-    # configuration scenario argument parsing
-    IFS='" "' read -r -a params_arr <<< "$params"
-    IFS=$OLDSIFS
     
     # Starting RPC watcher
     start_rpc_watcher $topology
@@ -89,18 +92,21 @@ for line in "${LINES[@]}"; do
         SCENARIO_LOGFOLDER=$AUTO_LOGFOLDER/$scenarioname-$env
         
         RUN_START=`date +%Y-%m-%d_%H-%M`
-        LOGFOLDER=$SCENARIO_LOGFOLDER/$scenarioname-${RUN_START}_${topology}_run_`printf "%03g" $run`
+        SHORT_PARAMS=`eval beautify_params $params`
+        echo Beautiful params: $SHORT_PARAMS
+        
+        export LOGFOLDER=$SCENARIO_LOGFOLDER/$topology-run`printf "%03g" $run`-$scenarioname-$SHORT_PARAMS-$RUN_START
         mkdir -p $LOGFOLDER
         echo "$line" > $LOGFOLDER/parameters.conf
         
         init=-1
         if [ $env = "miniworld" ]; then
-            initialize_miniworld_topology $topology | tee $LOGFOLDER/rpc_log.txt 2>&1
+            initialize_miniworld_topology $topology | tee $LOGFOLDER/rpc_init.log 2>&1
             init=${PIPESTATUS[0]}
         fi
 
         if [ $init -eq 0 ]; then 
-            exec_scenario $env $scenario --logfolder $LOGFOLDER | tee $LOGFOLDER/scenario_log.txt 2>&1
+            exec_scenario $env $scenario --logfolder $LOGFOLDER | tee $LOGFOLDER/scenario.log 2>&1
         fi
             
         if [ $env = "miniworld" ]; then 
