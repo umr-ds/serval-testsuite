@@ -4,8 +4,9 @@ MINIWORLD_TRACEBACK_PATH=/root/miniworld/MiniWorld/miniworld_traceback.log
 
 rpc_runloop_exception_handler () {
     echo -e "\e[37m\e[44m# Exception occured on RPC runloop. See '$MINIWORLD_TRACEBACK_PATH' for more information:\e[0m"
+    cp $MINIWORLD_TRACEBACK_PATH $LOGFOLDER/miniworld_traceback.log
     cat $MINIWORLD_TRACEBACK_PATH
-    echo -e "\e[37m\e[44m# Aborting scenario test!\e[0m"
+    echo -e "\e[37m\e[44m# Fully aborting auto-scenario!\e[0m"
     exit 1
 }
 
