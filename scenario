@@ -7,12 +7,19 @@ if [ "$1" = "-h" ] || [ "$#" -lt 2 ]; then
     echo "       params for scripts: i - initiate"
     echo
     echo "With help, a help text for the scenario will be printed."
+    echo
+    echo "Return codes:"
+    echo "    1: generic error"
+    echo "    2: scenario nonexistant"
+    echo "    3: no nodes found"
+    echo "    4: simulation type not supported"
+    echo "    10-19: error in Phase 0-9"
     exit
 fi
 
 if [ "$1" = "help" ]; then
 	cat `readlink -e $2`/usage
-	exit 1
+    exit
 fi
 
 TYPE=$1
@@ -45,7 +52,7 @@ rm -f $SEVERAL_ALL_SIDS_FILE
 # test if scenario is available
 if [ ! -d "$SCENARIO" ]; then
     echo -e "\e[1;31mError: Scenario $SCENARIO does not exist\e[0m"
-    exit 1
+    exit 2
 fi
 echo -e "\e[1;32mRunning Scenario $SCENARIO "
 
@@ -57,7 +64,7 @@ if [ "$TYPE" == "core" ]; then
     NODE_CNT=`find /tmp/ 2>/dev/null | grep pycore.*/n[0-9]*$ | wc -l`
     if [ "$NODE_CNT" == "0" ]; then
         echo -e "\e[1;31mError: Couldn't find any core nodes\e[0m"
-        exit 1
+        exit 3
     fi
 
     echo -n -e "  Using CORE Nodes "
@@ -98,7 +105,7 @@ elif [ "$TYPE" == "miniworld" ]; then
     
     if [ "$NODE_CNT" == "0" ]; then
         echo -e "\e[1;31mError: Couldn't find any MiniWorld nodes\e[0m"
-        exit 1
+        exit 3
     fi
 
     echo -e "  Using MiniWorld Nodes ${NODES[@]}"
@@ -135,7 +142,7 @@ elif [ "$TYPE" == "miniworld" ]; then
     
 else
     echo -e "\e[1;31mError: Type $TYPE is not supported\e[0m"
-    exit 1
+    exit 4
 fi
 
 # ALL_NODES contains indices of all nodes for easier handling
@@ -159,7 +166,7 @@ elif [ "$TYPE" == "miniworld" ]; then
     sudo ifconfig miniworld_tap 172.21.254.1
     if [ "$?" != "0" ]; then
         echo -e "\e[1;31mError: Management Interface could not be configured.\e[0m"
-        exit 1
+        exit 10
     fi
 
     echo -n "        - setting hostnames; copying scenario scripts"
@@ -174,7 +181,7 @@ elif [ "$TYPE" == "miniworld" ]; then
     for PID in $PIDS; do
         wait $PID || let "FAIL=$?"
         printf .
-        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 1; fi
+        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 10; fi
     done
     echo
 fi
@@ -210,7 +217,7 @@ if [ "$TYPE" == "miniworld" ]; then
     for PID in $MYPIDS; do
         wait $PID || let "FAIL=$?"
         printf .
-        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 1; fi
+        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 13; fi
     done
     echo
 fi
@@ -289,7 +296,7 @@ elif [ "$TYPE" == "miniworld" ]; then
     for PID in $PIDS; do
         wait $PID || let "FAIL=$?"
         printf .
-        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 1; fi
+        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 19; fi
     done
     mv /tmp/netmon*.csv $LOCAL_LOG_FOLDER/$SCENARIO-$APPENDIX/
     echo
