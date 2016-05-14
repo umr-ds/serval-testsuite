@@ -123,6 +123,8 @@ elif [ "$TYPE" == "miniworld" ]; then
         for PID in $PIDS; do
             wait $PID || let "FAIL=$?"
             printf .
+            # Activate line to investigate bugs caused by "shrinked" scenarios
+            # if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; echo "Time to investigate!"; sleep 300; exit 10; fi
             if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 1; fi
         done
         echo
