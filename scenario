@@ -1,6 +1,6 @@
 #! /bin/bash
 if [ "$1" = "-h" ] || [ "$#" -lt 2 ]; then
-    echo "usage: $0 (core | miniworld | help) scenario p w i [0 ... | -a ] [-appendix <String>]"
+    echo "usage: $0 (core | miniworld | help) scenario p w i [0 ... | -a ] [--logfolder <path>]"
     echo "starts a scenario with prepare/initiate at all given nodes"
     echo "       params for scripts: p - preparations"
     echo "       params for scripts: w - watch-agents"
@@ -32,22 +32,17 @@ INIT_ARGS=$5
 ###Build active nodes array and check if appendix argument is present
 VARARGS=(${@:6})
 for i in "${!VARARGS[@]}"; do 
-    if [ "${VARARGS[$i]}" = "-appendix" ]; then
+    if [ "${VARARGS[$i]}" = "--logfolder" ]; then
         i=$((i+1))
-        APPENDIX="${VARARGS[$i]}"
+        LOCAL_LOG_FOLDER="${VARARGS[$i]}"
         break
     fi
     
     ACTIVE_NODES="$ACTIVE_NODES ${VARARGS[$i]}"
 done
 
-if [ -z ${APPENDIX+x} ]; then
-    APPENDIX=`date +%Y-%m-%d_%H-%M`
-fi
-
 SEVERAL_ALL_SIDS_FILE="/tmp/serval-all-sids"
 rm -f $SEVERAL_ALL_SIDS_FILE
-
 
 # test if scenario is available
 if [ ! -d "$SCENARIO" ]; then
@@ -286,13 +281,17 @@ if [ "$TYPE" == "core" ]; then
 elif [ "$TYPE" == "miniworld" ]; then
     echo -n "getting data using scp"
     LOG_FOLDER=/tmp/serval-monitor
-    LOCAL_LOG_FOLDER=${LOG_FOLDER}-miniworld
+
+    if [ -z ${LOCAL_LOG_FOLDER+x} ]; then
+        LOCAL_LOG_FOLDER=$LOG_FOLDER-miniworld-$SCENARIO-`date +%Y-%m-%d_%H-%M`
+    fi
+    
     mkdir -p $LOCAL_LOG_FOLDER
 
     PIDS=""
     FAIL="0"
     for NODE in ${NODES[@]}; do
-        scp -q -r $SSH_OPTIONS $NODE:$LOG_FOLDER/* $LOCAL_LOG_FOLDER/$SCENARIO-$APPENDIX &
+        scp -q -r $SSH_OPTIONS $NODE:$LOG_FOLDER/*/* $LOCAL_LOG_FOLDER &
         PIDS="$PIDS $!"
     done
     for PID in $PIDS; do
@@ -300,7 +299,7 @@ elif [ "$TYPE" == "miniworld" ]; then
         printf .
         if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit 19; fi
     done
-    mv /tmp/netmon*.csv $LOCAL_LOG_FOLDER/$SCENARIO-$APPENDIX/
+    mv /tmp/netmon*.csv $LOCAL_LOG_FOLDER
     echo
 
 fi

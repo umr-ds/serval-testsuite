@@ -3,9 +3,9 @@
 MINIWORLD_TRACEBACK_PATH=/root/miniworld/MiniWorld/miniworld_traceback.log
 
 rpc_runloop_exception_handler () {
-    echo "\e[37m\e[44m# Exception occured on RPC runloop. See '$MINIWORLD_TRACEBACK_PATH' for more information:\e[0m"
+    echo -e "\e[37m\e[44m# Exception occured on RPC runloop. See '$MINIWORLD_TRACEBACK_PATH' for more information:\e[0m"
     cat $MINIWORLD_TRACEBACK_PATH
-    echo "\e[37m\e[44m# Aborting scenario test!\e[0m"
+    echo -e "\e[37m\e[44m# Aborting scenario test!\e[0m"
     exit 1
 }
 
@@ -16,7 +16,7 @@ start_rpc_watcher() {
 }
 
 exec_scenario () {
-    echo -e "\e[m\e[47m### Starting scenario: $@\e[0m"
+    echo -e "\e[m\e[47m### Performing scenario: $@\e[0m"
     (eval ./scenario $@)
     ret=$?
     if [ $ret -eq 0 ]; then
@@ -35,7 +35,7 @@ exec_scenario () {
 # }
 
 initialize_miniworld_topology () {
-    echo -e "\e[m\e[47m### Starting RPC scenario\e[0m"
+    echo -e "\e[m\e[47m### Starting RPC scenario...\e[0m"
     (cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCStartScenario.py MiniWorld_Scenarios/serval_paper/$1)
     init=$?
     if [ $init -eq 0 ]; then
@@ -57,17 +57,15 @@ trap rpc_runloop_exception_handler SIGUSR1
 MAIN_PROCESS_PID=$$
 echo -e "\e[37m\e[44m# Autorunning scenario configurations from $1, pid: $MAIN_PROCESS_PID\e[0m"
 
-TIMESTAMP=`date +%Y-%m-%d_%H-%M`
 mapfile -t LINES <$1
 
-
-mkdir -p /tmp/serval-monitor-miniworld
-mkdir -p /tmp/serval-monitor-miniworld/${TIMESTAMP}_${1}
+AUTO_SCENARIO_START=`date +%Y-%m-%d_%H-%M`
+AUTO_LOGFOLDER=/tmp/serval-monitor/${AUTO_SCENARIO_START}_$(basename ${1})
 
 for line in "${LINES[@]}"; do
+    # configuration file line parsing
     OLDIFS=$IFS
     IFS=" " read -ra line_arr <<< "$line"
-
     len=${#line_arr[@]}
     env=${line_arr[0]}
     scenario=${line_arr[@]:1:$(( len-3 ))}
@@ -75,8 +73,8 @@ for line in "${LINES[@]}"; do
     repeat=${line_arr[-2]:1:${#line_arr[-2]}}
     topology=${line_arr[-1]}
 
+    # configuration scenario argument parsing
     IFS='" "' read -r -a params_arr <<< "$params"
-
     IFS=$OLDSIFS
     
     # Starting RPC watcher
@@ -87,33 +85,27 @@ for line in "${LINES[@]}"; do
     run=1
     while [ $run -le $repeat ]; do
         echo -e "\e[m\e[47m### Iteration #$run: $env | $topology | $scenario\e[0m"
+        scenarioname=${line_arr[1]}
+        SCENARIO_LOGFOLDER=$AUTO_LOGFOLDER/$scenarioname-$env
+        
+        RUN_START=`date +%Y-%m-%d_%H-%M`
+        LOGFOLDER=$SCENARIO_LOGFOLDER/$scenarioname-${RUN_START}_${topology}_run_`printf "%03g" $run`
+        mkdir -p $LOGFOLDER
+        echo "$line" > $LOGFOLDER/parameters.conf
+        
         init=-1
         if [ $env = "miniworld" ]; then
-            scenarioname=${line_arr[1]}
-            scenariofolder=/tmp/serval-monitor-miniworld/${TIMESTAMP}_${1}/$scenarioname
-            mkdir -p $scenariofolder
-            
-            initialize_miniworld_topology $topology | tee $scenariofolder/current_rpc.txt 2>&1
+            initialize_miniworld_topology $topology | tee $LOGFOLDER/rpc_log.txt 2>&1
             init=${PIPESTATUS[0]}
         fi
 
-        run_timestamp=`date +%Y-%m-%d_%H-%M`
-        appendix=${run_timestamp}_${topology}_run_`printf "%03g" $run`
+        if [ $init -eq 0 ]; then 
+            exec_scenario $env $scenario --logfolder $LOGFOLDER | tee $LOGFOLDER/scenario_log.txt 2>&1
+        fi
             
-        if [ $init -eq 0 ]; then exec_scenario $env $scenario -appendix $appendix | tee $scenariofolder/current_scenario.txt 2>&1; fi
-            
-        if [ $env = "miniworld" ]; then finalize_miniworld_topology; fi
-
-        # creating the folder, if the scenario did not work. (for scenario_log)
-        mkdir -p /tmp/serval-monitor-miniworld/$scenarioname-$appendix
-            
-        # moving log and scenario-script log 
-        mv /tmp/serval-monitor-miniworld/$scenarioname-$appendix $scenariofolder
-        mv $scenariofolder/current_scenario.txt $scenariofolder/$scenarioname-$appendix/scenario_log.txt
-        mv $scenariofolder/current_rpc.txt $scenariofolder/$scenarioname-$appendix/rpc_log.txt
-            
-        # saving config line (should also be in scenario_log.txt)
-        echo "$scenario" > $scenariofolder/$scenarioname-$appendix/parameters.txt
+        if [ $env = "miniworld" ]; then 
+            finalize_miniworld_topology
+        fi
 
         run=$(( run + 1 ))
     done
