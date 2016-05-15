@@ -71,6 +71,11 @@ AUTO_SCENARIO_START=`date +%Y-%m-%d_%H-%M`
 AUTO_LOGFOLDER=/tmp/serval-monitor/${AUTO_SCENARIO_START}_$(basename ${1})
 
 for line in "${LINES[@]}"; do
+    if [[ $line == \#* ]]; then 
+	echo -e "\n\e[37m\e[40m## Skipping set: $line\e[0m"
+	continue
+    fi
+
     # configuration file line parsing
     OLDIFS=$IFS
     IFS=" " read -ra line_arr <<< "$line"
