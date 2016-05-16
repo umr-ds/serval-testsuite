@@ -19,7 +19,7 @@ start_rpc_watcher() {
 }
 
 exec_scenario () {
-    echo -e "\e[m\e[47m### Performing scenario: $@\e[0m"
+    echo -e "\e[30m\e[47m### Performing scenario: $@\e[0m"
     (eval ./scenario $@)
     ret=$?
     if [ $ret -eq 0 ]; then
@@ -38,7 +38,7 @@ exec_scenario () {
 # }
 
 initialize_miniworld_topology () {
-    echo -e "\e[m\e[47m### Starting RPC scenario...\e[0m"
+    echo -e "\e[30m\e[47m### Starting RPC scenario...\e[0m"
     (cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCStartScenario.py MiniWorld_Scenarios/serval_paper/$1)
     init=$?
     if [ $init -eq 0 ]; then
@@ -50,7 +50,7 @@ initialize_miniworld_topology () {
 }
 
 finalize_miniworld_topology () {
-    echo -e "\e[m\e[47m### Iteration done, finalizing topology.\e[0m"
+    echo -e "\e[30m\e[47m### Iteration done, finalizing topology.\e[0m"
     pkill -fe RPCServer.py
     #(cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCStopScenario.py)
     return $?
@@ -95,7 +95,7 @@ for line in "${LINES[@]}"; do
 
     run=1
     while [ $run -le $repeat ]; do
-        echo -e "\e[m\e[47m### Iteration #$run: $env | $topology | $scenario\e[0m"
+        echo -e "\e[30m\e[47m### Iteration #$run: $env | $topology | $scenario\e[0m"
         scenarioname=${line_arr[1]}
         SCENARIO_LOGFOLDER=$AUTO_LOGFOLDER/$scenarioname-$env
         
