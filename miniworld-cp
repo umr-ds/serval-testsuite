@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ $# -lt 3 ]; then
+	echo "USAGE: $0 <host_num> <remote_path> <localpath>"
+	exit 1
+fi
+
+scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=QUIET -o User=root 172.21.0.$1:$2 $3
