@@ -13,7 +13,7 @@ rpc_runloop_exception_handler () {
 
 start_rpc_watcher() {
     echo -e "\e[37m\e[44m# Starting RPC watcher...\e[0m"
-    rm $MINIWORLD_TRACEBACK_PATH
+    rm -f $MINIWORLD_TRACEBACK_PATH
 	(cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCCheckErrors.py -pg $MAIN_PROCESS_PID -t $MINIWORLD_TRACEBACK_PATH -s 10 MiniWorld_Scenarios/serval_paper/$1 > /dev/null) &
     WATCHER_PID=$!
 }
@@ -101,7 +101,7 @@ for line in "${LINES[@]}"; do
         
         RUN_START=`date +%Y-%m-%d_%H-%M`
         SHORT_PARAMS=`eval beautify_params $params`
-        echo Beautiful params: $SHORT_PARAMS
+        #echo Beautiful params: $SHORT_PARAMS
         
         export LOGFOLDER=$SCENARIO_LOGFOLDER/$topology-run_`printf "%03g" $run`-$scenarioname-$SHORT_PARAMS-$RUN_START
         mkdir -p $LOGFOLDER
