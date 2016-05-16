@@ -103,7 +103,7 @@ for line in "${LINES[@]}"; do
         SHORT_PARAMS=`eval beautify_params $params`
         echo Beautiful params: $SHORT_PARAMS
         
-        export LOGFOLDER=$SCENARIO_LOGFOLDER/$topology-run`printf "%03g" $run`-$scenarioname-$SHORT_PARAMS-$RUN_START
+        export LOGFOLDER=$SCENARIO_LOGFOLDER/$topology-run_`printf "%03g" $run`-$scenarioname-$SHORT_PARAMS-$RUN_START
         mkdir -p $LOGFOLDER
         echo "$line" > $LOGFOLDER/parameters.conf
         
