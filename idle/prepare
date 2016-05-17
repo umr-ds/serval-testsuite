@@ -1,1 +1,2 @@
 #!/bin/sh
+printf "Nothing to do here!"
