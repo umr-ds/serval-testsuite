@@ -1,20 +1,20 @@
 #! /bin/bash
 
-MINIWORLD_TRACEBACK_PATH=/root/miniworld/MiniWorld/miniworld_traceback.log
-
 rpc_runloop_exception_handler () {
     echo -e "\e[37m\e[44m# Either an exception occured on the RPC runloop or the RPC server is not started at all!. See '$MINIWORLD_TRACEBACK_PATH' for runloop errors:\e[0m"
-    cp $MINIWORLD_TRACEBACK_PATH $LOGFOLDER/miniworld_traceback.log
     cat $MINIWORLD_TRACEBACK_PATH
-    #echo -e "\e[37m\e[44m# Fully aborting auto-scenario!\e[0m"
     echo -e "\e[37m\e[44m# --- ignoring for now!\e[0m"
+    #echo -e "\e[37m\e[44m# Fully aborting auto-scenario!\e[0m"
+    #pkill -TERM -P $$
     #exit 1
 }
 
-start_rpc_watcher() {
+start_rpc_watcher () {
     echo -e "\e[37m\e[44m# Starting RPC watcher...\e[0m"
-    rm -f $MINIWORLD_TRACEBACK_PATH
-	(cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCCheckErrors.py -pg $MAIN_PROCESS_PID -t $MINIWORLD_TRACEBACK_PATH -s 10 MiniWorld_Scenarios/serval_paper/$1 > /dev/null) &
+    # (now in AUTO_LOGPATH, won't exist!) rm -f $MINIWORLD_TRACEBACK_PATH
+    # RPCCheckErrors needs a scenario, but does not use it. Workaround: create empty one.
+    echo "{}" > /tmp/empty_scenario.json
+    (cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCCheckErrors.py -pg $MAIN_PROCESS_PID -t $MINIWORLD_TRACEBACK_PATH -s 10 /tmp/empty_scenario.json > /dev/null ) &
     WATCHER_PID=$!
 }
 
@@ -63,14 +63,17 @@ beautify_params () {
     echo -$ret
 }
 
-trap rpc_runloop_exception_handler SIGUSR1
-MAIN_PROCESS_PID=$$
-echo -e "\e[37m\e[44m# Autorunning scenario configurations from $1, pid: $MAIN_PROCESS_PID\e[0m"
-
 mapfile -t LINES <$1
 
 AUTO_SCENARIO_START=`date +%Y-%m-%d_%H-%M`
 AUTO_LOGFOLDER=/tmp/serval-monitor/${AUTO_SCENARIO_START}_$(basename ${1})
+MINIWORLD_TRACEBACK_PATH=$AUTO_LOGFOLDER/miniworld_traceback.log
+
+trap rpc_runloop_exception_handler SIGUSR1
+MAIN_PROCESS_PID=$$
+
+echo -e "\e[37m\e[44m# Autorunning scenario configurations from $1, pid: $MAIN_PROCESS_PID\e[0m"
+start_rpc_watcher $topology
 
 for line in "${LINES[@]}"; do
     if [[ $line == \#* ]]; then 
@@ -88,9 +91,6 @@ for line in "${LINES[@]}"; do
     repeat=${line_arr[-2]:1:${#line_arr[-2]}}
     topology=${line_arr[-1]}
     
-    # Starting RPC watcher
-    start_rpc_watcher $topology
-    
     echo -e "\n\e[37m\e[40m## Running set:   $env | $topology | $scenario | repeating $repeat times\e[0m"
 
     run=1
@@ -101,7 +101,6 @@ for line in "${LINES[@]}"; do
         
         RUN_START=`date +%Y-%m-%d_%H-%M`
         SHORT_PARAMS=`eval beautify_params $params`
-        #echo Beautiful params: $SHORT_PARAMS
         
         export LOGFOLDER=$SCENARIO_LOGFOLDER/$topology-run_`printf "%03g" $run`-$scenarioname-$SHORT_PARAMS-$RUN_START
         mkdir -p $LOGFOLDER
@@ -109,22 +108,22 @@ for line in "${LINES[@]}"; do
         
         init=-1
         if [ $env = "miniworld" ]; then
-            initialize_miniworld_topology $topology | tee $LOGFOLDER/rpc_init.log 2>&1
+            initialize_miniworld_topology $topology |& tee $LOGFOLDER/rpc_init.log 2>&1
             init=${PIPESTATUS[0]}
         fi
 
         if [ $init -eq 0 ]; then 
-            exec_scenario $env $scenario --logfolder $LOGFOLDER | tee $LOGFOLDER/scenario.log 2>&1
+            exec_scenario $env $scenario --logfolder $LOGFOLDER |& tee $LOGFOLDER/scenario.log 2>&1
         fi
-            
+        
         if [ $env = "miniworld" ]; then 
             finalize_miniworld_topology
         fi
-
+        
         run=$(( run + 1 ))
     done
-    
-    kill $WATCHER_PID > /dev/null
 done
+
+kill $WATCHER_PID > /dev/null
 
 echo -e "\n\e[37m\e[44m# Done autorunning scenario configurations from $1\e[0m"
