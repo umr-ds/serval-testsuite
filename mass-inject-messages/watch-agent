@@ -18,6 +18,7 @@ case $NUM_MSGS in
 esac
 
 while [ true ]; do
+    sleep 1
     # returns 1 if script itself fails
     # returns 255 if ssh/vcmd session fails
 
@@ -37,6 +38,9 @@ while [ true ]; do
     if [ $(servald meshms list conversations $SID | wc -l) -eq 3 ]; then
         # Get SID of active node
         SENDER=$( servald meshms list conversations $SID | tail -n 1 | awk '{split($0,a,":"); print a[2]}')
+        if [ -z ${SENDER} ]; then
+            continue
+        fi
         # Check if node received the specified number of messages from the active node
         if [ $(servald meshms list messages $SID $SENDER | wc -l) -ge $(( $NUMBER_OF_HEADER_LINES+$NUMBER_OF_MESSAGES )) ]; then
             ## -eq SHOULD be perfectly fine in this if, in some cases messages are sent multiple times.
@@ -48,5 +52,4 @@ while [ true ]; do
         exit 0
     fi
 
-    sleep 1
 done
