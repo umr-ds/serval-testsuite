@@ -168,6 +168,21 @@ elif [ "$TYPE" == "miniworld" ]; then
         exit $PHASE
     fi
 
+    echo -n "        - waiting for ssh service"
+    PIDS=""
+    FAIL="0"
+    
+    for N in $ALL_NODES; do
+        while [ true ]; do sleep 0.1; nc -vz ${NODES[$N]} >& /dev/null 22 && break; done &
+        PIDS="$PIDS $!"
+    done
+    for PID in $PIDS; do
+        wait $PID || let "FAIL=$?"
+        printf .
+        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit $PHASE; fi
+    done
+    echo
+
     echo -n "        - setting hostnames; copying scenario scripts"
     PIDS=""
     FAIL="0"
