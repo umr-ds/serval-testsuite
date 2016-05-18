@@ -1,0 +1,4 @@
+#!/bin/sh
+
+./miniworld-execute-par "servald status" 2>&1 | sort -n | cut -d ":" -f 1,5  | cut -d " " -f 1,2
+

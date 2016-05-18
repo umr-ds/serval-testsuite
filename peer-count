@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./miniworld-execute-par "servald peer count" 2>&1 | sort -k1 -n
