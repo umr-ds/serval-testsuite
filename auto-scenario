@@ -1,4 +1,5 @@
 #! /bin/bash
+exec &> >(tee /tmp/.auto-scenario.log )
 
 rpc_runloop_exception_handler () {
     echo -e "\e[37m\e[44m# Either an exception occured on the RPC runloop or the RPC server is not started at all!. See '$MINIWORLD_TRACEBACK_PATH' for runloop errors:\e[0m"

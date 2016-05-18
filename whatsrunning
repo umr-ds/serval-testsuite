@@ -1,0 +1,9 @@
+#!/bin/sh
+echo -n "\033[96mCurrent scenario: "
+scenario=$(ps aux | grep "scenario miniworld" | grep -v grep | awk '{print $(NF)}' | tail -n1)
+
+if [ -z $scenario ]; then
+	echo "\033[91mnone\033[m"
+else
+	echo "\033[92m$(basename $scenario)\033[m"
+fi
