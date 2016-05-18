@@ -253,11 +253,6 @@ export PHASE=14
 echo -n -e "\e[1;34mPhase 4 - Starting servald monitoring\e[0m"
 exec_par "$ALL_NODES" "/serval-tests/monitor serval"
 
-for iface in $(ifconfig | grep br | cut -d' ' -f1); do
-    ./netmon.py $iface >> /tmp/netmon_$iface.csv &
-    NETMONS="$NETMONS $!"
-done
-
 ### PHASE 5
 export PHASE=15
 # using trap to kill running vcmds
