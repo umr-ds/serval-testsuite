@@ -52,8 +52,9 @@ initialize_miniworld_topology () {
 finalize_miniworld_topology () {
     echo -e "\e[30m\e[47m### Iteration done, finalizing topology.\e[0m"
     pkill -fe RPCServer.py > /dev/null
+    ./miniworld_event_hook_cleanup.sh
     #(cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCStopScenario.py)
-    return $?
+    #return $?
 }
 
 beautify_params () {
