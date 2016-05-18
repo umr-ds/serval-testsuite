@@ -60,7 +60,7 @@ finalize_miniworld_topology () {
 
 beautify_params () {
     for param in "$@"; do
-        ret=$ret`eval echo $param- | sed "s/f /f./g; s/\ //g"`
+        ret=$ret`eval echo $param- | sed "s/f /f./g; s/\ /_/g"`
     done
     echo -$ret
 }
@@ -104,7 +104,7 @@ for line in "${LINES[@]}"; do
         RUN_START=`date +%Y-%m-%d_%H-%M`
         SHORT_PARAMS=`eval beautify_params $params`
         
-        export LOGFOLDER=$SCENARIO_LOGFOLDER/$topology-run_`printf "%03g" $run`-$scenarioname-$SHORT_PARAMS-$RUN_START
+        export LOGFOLDER=$SCENARIO_LOGFOLDER/$topology-$scenarioname-$SHORT_PARAMS-run_`printf "%03g" $run`--$RUN_START
         mkdir -p $LOGFOLDER
         echo "$line" > $LOGFOLDER/parameters.conf
         
