@@ -3,6 +3,7 @@
 TOTAL_NODES="$1"
 TOTAL_ACTIVE_NODES="$2"
 NUM_MSGS="$3"
+#RHIZOME_CLEAN_STEP=10
 
 case $NUM_MSGS in
     '' | *[!0-9]*)
@@ -17,4 +18,7 @@ while [ $NUMBER_OF_MESSAGES -gt 0 ]
 do
     /serval-tests/meshms-hello-everybody
     NUMBER_OF_MESSAGES=$(($NUMBER_OF_MESSAGES-1))
+    #if [ $(($NUMBER_OF_MESSAGES%$RHIZOME_CLEAN_STEP)) -eq 0  ]; then
+    #    servald rhizome clean
+    #fi
 done
