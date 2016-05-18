@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./miniworld-execute-par "servald rhizome list | grep ":file:" | wc -l" 2>&1 | sort -k1 -n
