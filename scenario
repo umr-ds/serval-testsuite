@@ -256,7 +256,7 @@ exec_par "$ALL_NODES" "/serval-tests/monitor serval"
 ### PHASE 5
 export PHASE=15
 # using trap to kill running vcmds
-trap "kill $AGENTS $NETMONS 2> /dev/null; rm /tmp/netmon*.csv; echo Killed agents and netmons; exit 130" SIGINT SIGTERM
+trap "kill $AGENTS 2> /dev/null; echo Killed agents; exit 130" SIGINT SIGTERM
 
 echo -n -e "\e[1;34mPhase 5 - Starting watch-agents: $SCENARIO_FOLDER/watch-agent $NODE_CNT $ACTIVE_NODE_CNT $WATCH_ARGS\e[0m"
 for NODE in `seq 0 $(($NODE_CNT - 1))`; do
@@ -289,9 +289,6 @@ fi
 export PHASE=18
 echo -n -e "\e[1;34mPhase 8 - Stopping monitoring\e[0m"
 exec_par "$ALL_NODES" "/serval-tests/monitor stop; servald stop > /dev/null"
-echo -n -e "\e[1;34m        - Stopping netmons\e[0m"
-for PID in $NETMONS; do kill $PID; printf .; done
-echo
 
 ### PHASE 9
 export PHASE=19
@@ -320,7 +317,7 @@ elif [ "$TYPE" == "miniworld" ]; then
         printf .
         if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit $PHASE; fi
     done
-    mv /tmp/netmon*.csv $LOCAL_LOG_FOLDER
+    # mv /tmp/netmon*.csv $LOCAL_LOG_FOLDER #eventually we'll need this later, for moving miniworld netmon logs.
     echo
 
 fi
