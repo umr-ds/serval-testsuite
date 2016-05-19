@@ -317,7 +317,8 @@ elif [ "$TYPE" == "miniworld" ]; then
         printf .
         if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit $PHASE; fi
     done
-    # mv /tmp/netmon*.csv $LOCAL_LOG_FOLDER #eventually we'll need this later, for moving miniworld netmon logs.
+    mkdir -p $LOCAL_LOG_FOLDER/netmon
+    mv /tmp/netmon*.csv $LOCAL_LOG_FOLDER/netmon
     echo
 
 fi
