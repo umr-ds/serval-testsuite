@@ -21,7 +21,7 @@ start_rpc_watcher () {
 
 exec_scenario () {
     echo -e "\e[30m\e[47m### Performing scenario: $@\e[0m"
-    schat-add auto-scenario "\a### Performing scenario: $@" >& /dev/null
+    schat-add auto-scenario "\a### Performing scenario: ${@:1:6}" >& /dev/null
     (eval ./scenario $@)
     ret=$?
     if [ $ret -eq 0 ]; then
@@ -29,7 +29,7 @@ exec_scenario () {
         schat-add auto-scenario "\a### Scenario finished successfully!" >& /dev/null
     else
         echo -e "\e[31m\e[47m### Scenario failed with return code $ret...\n`./scenario | tail -n-6`\e[0m"
-        schat-add auto-scenario "\a### Scenario failed with return code $ret...\n`./scenario | tail -n-6`" >& /dev/null
+        schat-add auto-scenario "\a### Scenario failed with return code $ret.\n" >& /dev/null
     fi
     return $ret
 }
