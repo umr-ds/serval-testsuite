@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ -z "$1" ] ; then
+        echo "Usage: $0 <search string>"
+        exit
+fi
+
+./miniworld-execute-par "cat /root/.serval/serval.log | grep '$@'" 2>&1 | sort -n
+
