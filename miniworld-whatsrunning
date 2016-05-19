@@ -1,0 +1,21 @@
+#!/bin/sh
+
+print_scenario () {
+    scenario=$(ps aux | grep "scenario miniworld" | grep -v grep | awk '{print $(NF)}' | tail -n1)
+    if [ -z $scenario ]; then
+    	echo "\033[96mCurrent scenario: \033[91mnone\033[m"
+    else
+    	echo "\033[96mCurrent scenario: \033[92m$(basename $scenario)\033[m"
+    fi
+}
+
+if [ "$1" == "-l" ]; then
+    printf "\n"
+    while true; do
+    	printf "\033[A\r"
+        print_scenario
+    	sleep 5
+    done
+fi
+
+print_scenario
