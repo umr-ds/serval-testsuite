@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ -z "$1" ] ; then
+        echo "Usage: $0 <node_number>"
+        exit
+fi
+
+./miniworld-cp $1 /root/.serval/serval.log /tmp/node$1.log
+
+echo New logfile location: /tmp/node$1.log
