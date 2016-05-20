@@ -18,7 +18,7 @@ PIDS=""
 FAIL="0"
 for N in `seq 1 $NODE_CNT`; do
     NODE="172.21.0.$N"
-    ssh $SSH_OPTIONS $NODE ". .profile; /serval-tests/rhizome-list-bundles-curl | /serval-tests/jsawk | grep '\["rows",[0-9]*\]' | grep -v MeshMS2 | wc -l" &
+    ssh $SSH_OPTIONS $NODE ". .profile; /serval-tests/rhizome-list-bundles-curl | /serval-tests/jsawk | grep '\[\"rows\",[0-9]*\]' | grep -v MeshMS2 | wc -l" &
     PID=$!
     PIDS="$PIDS $PID"
     getPIDs[$PID]=$N
