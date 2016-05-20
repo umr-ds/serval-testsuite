@@ -28,5 +28,5 @@ while [ true ]; do
         exit 0
     fi
 
-    sleep 1
+    sleep 15
 done

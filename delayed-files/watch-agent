@@ -45,5 +45,5 @@ while [ true ]; do
     	fi
     fi
 
-    sleep 1
+    sleep 15
 done

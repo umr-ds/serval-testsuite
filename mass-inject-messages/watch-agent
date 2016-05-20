@@ -17,7 +17,7 @@ case $NUM_MSGS in
 esac
 
 # Check if node is the active node in a setpu with more than two nodes 
-if [ -f /tmp/$HOSTNAME`.active ]; then
+if [ -f /tmp/$HOSTNAME.active ]; then
 	exit 0
 fi
 
