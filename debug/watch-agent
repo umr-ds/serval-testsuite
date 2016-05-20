@@ -9,7 +9,7 @@ while [ true ]; do
     # returns 255 if ssh/vcmd session fails
 
     # Check if servald is running
-    if [ `(ps aux 2> /dev/null || ps w) | grep "servald start" | grep -v grep | wc -l` -lt 1 ]; then
+    if [ $(servald status | grep stopped | wc -l) -eq 1 ]; then
         echo "ERROR: Serval crashed on $HOSTNAME" >&2
         exit 2
     fi
@@ -24,5 +24,5 @@ while [ true ]; do
     #    exit 0
     #fi
 
-    sleep 1
+    sleep 15
 done
