@@ -40,7 +40,7 @@ while [ true ]; do
 
     # Check if node received the messages from the active node
     CONV_LIST=$(/serval-tests/meshms-list-conv-curl $SID)
-    if [ ! $(echo $CONV_LIST | /serval-tests/jsawk | grep '\["rows",[0-9]*\]' | wc -l) -gt 0 ]; then
+    if [ $(echo $CONV_LIST | /serval-tests/jsawk | grep '\["rows",[0-9]*\]' | wc -l) -gt 0 ]; then
         # Get SID of active node
         SENDER=$(echo $CONV_LIST | /serval-tests/jsawk | grep '\["rows",[0-9]*\]' | tail -n 1 | awk '{split($0,a,","); print a[4]}' | tr -d '"')
         if [ -z ${SENDER} ]; then
