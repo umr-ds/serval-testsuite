@@ -10,9 +10,8 @@ print_scenario () {
 }
 
 if [ "$1" == "-l" ]; then
-    clear
     while true; do
-    	printf "\033[A\r"
+        clear
         print_scenario
     	sleep 5
     done
