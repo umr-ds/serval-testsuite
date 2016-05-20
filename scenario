@@ -42,6 +42,14 @@ for i in "${!VARARGS[@]}"; do
     ACTIVE_NODES="$ACTIVE_NODES ${VARARGS[$i]}"
 done
 
+LOG_FOLDER=/tmp/serval-monitor
+if [ -z ${LOCAL_LOG_FOLDER+x} ]; then LOCAL_LOG_FOLDER=$LOG_FOLDER-miniworld-$SCENARIO-`date +%Y-%m-%d_%H-%M`; fi
+mkdir -p $LOCAL_LOG_FOLDER
+
+date_ms () { date +%s%3N; }
+TIMING_FILE=$LOCAL_LOG_FOLDER/timing.csv
+echo "timestamp_ms, phase, name" >> $TIMING_FILE
+
 SEVERAL_ALL_SIDS_FILE="/tmp/serval-all-sids"
 rm -f $SEVERAL_ALL_SIDS_FILE
 
@@ -51,7 +59,6 @@ if [ ! -d "$SCENARIO" ]; then
     exit 2
 fi
 echo -e "\e[1;32mRunning Scenario $SCENARIO "
-
 
 NODES=()
 if [ "$TYPE" == "core" ]; then
@@ -154,8 +161,9 @@ echo -e "\e[0m\n"
 
 
 ### Phase 0
-echo -e "\e[1;34mPhase 0 - Preconditions\e[0m"
 export PHASE=10
+echo -e "\e[1;34mPhase 0 - Preconditions\e[0m"
+echo "`date_ms`, 0, Preconditions" >> $TIMING_FILE
 
 if [ "$TYPE" == "core" ]; then
     echo "        - no preconditions needed for core"
@@ -204,11 +212,13 @@ fi
 ### PHASE 1
 export PHASE=11
 echo -n -e "\e[1;34mPhase 1 - Prepare: $SCENARIO_FOLDER/prepare $NODE_CNT $ACTIVE_NODE_CNT $PREP_ARGS\e[0m"
+echo "`date_ms`, 1, Prepare" >> $TIMING_FILE
 exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/prepare $NODE_CNT $ACTIVE_NODE_CNT $PREP_ARGS"
 
 ### PHASE 2
 export PHASE=12
 echo -n -e "\e[1;34mPhase 2 - Syncing qemu clocks\e[0m"
+echo "`date_ms`, 2, system-monitoring" >> $TIMING_FILE
 exec_par "$ALL_NODES" '/etc/init.d/sysntpd stop; killall ntpd; mkdir -p /tmp/serval-monitor/ntp/ntp-log/; ntpd -c /etc/ntp.conf -q > /dev/null; cp /tmp/ntp.log /tmp/serval-monitor/ntp/ntp-log/ntp_`hostname`.log'
 
 echo -n -e "\e[1;34m        - Starting system monitoring\e[0m"
@@ -217,6 +227,7 @@ exec_par "$ALL_NODES" "/serval-tests/monitor system"
 ## PHASE 3
 export PHASE=13
 echo -n -e "\e[1;34mPhase 3 - Generating SIDs and starting servald\e[0m"
+echo "`date_ms`, 3, servald-start" >> $TIMING_FILE
 # exec_par "$ALL_NODES" 'export HOST=`hostname | cut -d u -f2`; printf "Host %i - %02x - " $HOST $((16 + $HOST)); servald keyring add "" `printf "%2x" $((16+$HOST))`; servald start > /dev/null; sleep 2'
 exec_par "$ALL_NODES" 'export HOST=`hostname | cut -d u -f2 | sed -e "s/^0*//g"`; servald keyring add "" `printf "%2x" $((16+$HOST))` > /dev/null; servald start > /dev/null; sleep 2'
 
@@ -251,14 +262,17 @@ fi
 ### PHASE 4
 export PHASE=14
 echo -n -e "\e[1;34mPhase 4 - Starting servald monitoring\e[0m"
+echo "`date_ms`, 4, servald-monitoring" >> $TIMING_FILE
 exec_par "$ALL_NODES" "/serval-tests/monitor serval"
 
 ### PHASE 5
 export PHASE=15
+echo -n -e "\e[1;34mPhase 5 - Starting watch-agents: $SCENARIO_FOLDER/watch-agent $NODE_CNT $ACTIVE_NODE_CNT $WATCH_ARGS\e[0m"
+echo "`date_ms`, 5, watch-agent-start" >> $TIMING_FILE
+
 # using trap to kill running vcmds
 trap "kill $AGENTS 2> /dev/null; echo Killed agents; exit 130" SIGINT SIGTERM
 
-echo -n -e "\e[1;34mPhase 5 - Starting watch-agents: $SCENARIO_FOLDER/watch-agent $NODE_CNT $ACTIVE_NODE_CNT $WATCH_ARGS\e[0m"
 for NODE in `seq 0 $(($NODE_CNT - 1))`; do
     exec $NODE "$SCENARIO_FOLDER/watch-agent $NODE_CNT $ACTIVE_NODE_CNT $WATCH_ARGS" &
     AGENTS="$AGENTS $!"
@@ -269,11 +283,13 @@ echo
 ### PHASE 6
 export PHASE=16
 echo -n -e "\e[1;34mPhase 6 - Initiating Scenario: $SCENARIO_FOLDER/initiate $NODE_CNT $ACTIVE_NODE_CNT $INIT_ARGS\e[0m"
+echo "`date_ms`, 6, initiate" >> $TIMING_FILE
 exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/initiate $NODE_CNT $ACTIVE_NODE_CNT $INIT_ARGS"
 
 ### PHASE 7
 export PHASE=17
 echo -e "\e[1;34mPhase 7 - Waiting for agents:\e[0m"
+echo "`date_ms`, 7, watch-agent-wait" >> $TIMING_FILE
 for PID in $AGENTS; do
     wait $PID || echo "  Watch-Agent $PID failed ($?)."
 done
@@ -288,23 +304,18 @@ fi
 ### PHASE 8
 export PHASE=18
 echo -n -e "\e[1;34mPhase 8 - Stopping monitoring\e[0m"
+echo "`date_ms`, 8, stop-monitoring" >> $TIMING_FILE
 exec_par "$ALL_NODES" "/serval-tests/monitor stop; servald stop > /dev/null"
 
 ### PHASE 9
 export PHASE=19
 echo -n -e "\e[1;34mPhase 9 - Data Collection: \e[0m"
+echo "`date_ms`, 9, data-collection" >> $TIMING_FILE
 if [ "$TYPE" == "core" ]; then
     echo "not needed in core, check /tmp/serval-monitor"
     
 elif [ "$TYPE" == "miniworld" ]; then
     echo -n "getting data using scp"
-    LOG_FOLDER=/tmp/serval-monitor
-
-    if [ -z ${LOCAL_LOG_FOLDER+x} ]; then
-        LOCAL_LOG_FOLDER=$LOG_FOLDER-miniworld-$SCENARIO-`date +%Y-%m-%d_%H-%M`
-    fi
-    
-    mkdir -p $LOCAL_LOG_FOLDER
 
     PIDS=""
     FAIL="0"
@@ -317,11 +328,13 @@ elif [ "$TYPE" == "miniworld" ]; then
         printf .
         if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit $PHASE; fi
     done
+    echo
+    
     mkdir -p $LOCAL_LOG_FOLDER/netmon
     mv /tmp/netmon*.csv $LOCAL_LOG_FOLDER/netmon
-    echo
 
 fi
 
 echo
 echo -e "\e[1;32mScenario $SCENARIO done.\e[0m"
+echo "`date_ms`, 10, finished" >> $TIMING_FILE
