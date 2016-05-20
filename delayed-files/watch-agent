@@ -34,7 +34,7 @@ while [ true ]; do
 
     # Check if condition is reached
     if [ "$COUNT_OR_TIME" = "f" ]; then
-    	if [ $(servald rhizome list | grep ":file:" | wc -l) -eq $TOTAL_FILES ]; then
+    	if [ $(/serval-tests/rhizome-list-bundles-curl | /serval-tests/jsawk | grep '\["rows",[0-9]*\]' | grep -v MeshMS2 | wc -l) -eq $TOTAL_FILES ]; then
     		echo "Scenario finished on $HOSTNAME: All files arrived"
     		exit 0
     	fi
