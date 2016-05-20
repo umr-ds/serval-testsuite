@@ -4,7 +4,6 @@
 #LATER=$((`date +%s` + $TIMEOUT_S))
 HOSTNAME=`hostname`
 SID=$(servald id self | tail -n 1)
-NUMBER_OF_HEADER_LINES=2
 
 TOTAL_NODES="$1"
 TOTAL_ACTIVE_NODES="$2"
@@ -17,13 +16,18 @@ case $NUM_MSGS in
         NUMBER_OF_MESSAGES=$NUM_MSGS;;
 esac
 
-while [ true ]; do
-    sleep 1
+# Check if node is the active node in a setpu with more than two nodes 
+if [ -f /tmp/$HOSTNAME`.active ]; then
+	exit 0
+fi
+
+while [ true ]; do    
+    sleep 15
     # returns 1 if script itself fails
     # returns 255 if ssh/vcmd session fails
 
     # Check if servald is running
-    if [ `(ps aux 2> /dev/null || ps w) | grep "servald start" | grep -v grep | wc -l` -lt 1 ]; then
+    if [ $(servald status | grep stopped | wc -l) -eq 1 ]; then
         echo "ERROR: Serval crashed on $HOSTNAME" >&2
         exit 2
     fi
@@ -35,21 +39,18 @@ while [ true ]; do
     #fi
 
     # Check if node received the messages from the active node
-    if [ $(servald meshms list conversations $SID | wc -l) -eq 3 ]; then
+    CONV_LIST=$(/serval-tests/meshms-list-conv-curl $SID)
+    if [ ! $(echo $CONV_LIST | /serval-tests/jsawk | grep '\["rows",[0-9]*\]' | wc -l) -gt 0 ]; then
         # Get SID of active node
-        SENDER=$( servald meshms list conversations $SID | tail -n 1 | awk '{split($0,a,":"); print a[2]}')
+        SENDER=$(echo $CONV_LIST | /serval-tests/jsawk | grep '\["rows",[0-9]*\]' | tail -n 1 | awk '{split($0,a,","); print a[4]}' | tr -d '"')
         if [ -z ${SENDER} ]; then
             continue
         fi
+        if [ $(/serval-tests/meshms-list-mess-curl $SID $SENDER | /serval-tests/jsawk | grep '\["rows",[0-9]*\]' | wc -l) -ge $NUMBER_OF_MESSAGES ]; then
         # Check if node received the specified number of messages from the active node
-        if [ $(servald meshms list messages $SID $SENDER | wc -l) -ge $(( $NUMBER_OF_HEADER_LINES+$NUMBER_OF_MESSAGES )) ]; then
             ## -eq SHOULD be perfectly fine in this if, in some cases messages are sent multiple times.
             echo "$HOSTNAME finished"
             exit 0
         fi
-    # Check if node is the active node in a setpu with more than two nodes 
-    elif [ $(servald meshms list conversations $SID | wc -l) -gt 3 ]; then
-        exit 0
-    fi
 
 done
