@@ -1,0 +1,15 @@
+#!/bin/bash
+
+function usage () {
+    echo "Usage: $0 <log folder path>"
+    echo "    recursively displays all errors in the given scenario log folder"
+}
+
+if [ "$1" = "-h" ] || [ "$#" -ne 1  ] || [ ! -d "$1" ]; then
+    usage
+    exit
+fi
+
+LOG_FOLDER=$1
+
+find $1 -type f -not -empty -name *.err -exec cat {} \; | tac | sed '/Cannot symlink/I, +2 d' | tac
