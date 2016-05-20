@@ -21,7 +21,7 @@ while true; do
             CUR_NODE=$(($N_new+$i))
             if [ $CUR_NODE -le 64 ]; then
                 NODE="172.21.0.$CUR_NODE"
-                CUR_FILE_CNT=$(ssh $SSH_OPTIONS $NODE ". .profile; servald rhizome list | grep :file: | wc -l")
+                CUR_FILE_CNT=$(ssh $SSH_OPTIONS $NODE ". .profile; /serval-tests/rhizome-list-bundles-curl | /serval-tests/jsawk | grep '\[\"rows\",[0-9]*\]' | grep -v MeshMS2 | wc -l")
                 if [ $CUR_NODE -le 9 ];then
                     CUR_OUTPUT=" $CUR_NODE:  ["
                 else
