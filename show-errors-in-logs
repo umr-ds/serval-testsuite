@@ -10,6 +10,4 @@ if [ "$1" = "-h" ] || [ "$#" -ne 1  ] || [ ! -d "$1" ]; then
     exit
 fi
 
-LOG_FOLDER=$1
-
 find $1 -type f -not -empty -name *.err -print -exec cat {} \; | tac | sed '/Cannot symlink/I, +2 d' | tac | grep -B 1 '^[^//]' | sed '/^-/ d' | sed '\|^/|{x;p;x;}'
