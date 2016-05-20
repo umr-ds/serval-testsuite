@@ -1,3 +1,3 @@
 #!/bin/sh
 
-./miniworld-execute-par "servald rhizome list | grep ":file:" | wc -l" 2>&1 | sort -k1 -n
+./miniworld-execute-par "/serval-tests/rhizome-list-bundles-curl | /serval-tests/jsawk | grep '\[\"rows\",[0-9]*\]' | grep -v MeshMS2 | wc -l" 2>&1 | sort -k1 -n
