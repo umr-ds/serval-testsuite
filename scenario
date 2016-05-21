@@ -136,7 +136,7 @@ elif [ "$TYPE" == "miniworld" ]; then
     exec_seq () {
         echo
         for N in $1; do
-            echo -n -e "  Node $N: "
+            echo -n -e "  Node $(echo ${NODES[$N]} | cut -d "." -f 4 ): "
             ssh $SSH_OPTIONS ${NODES[$N]} ". .profile; ${@:2}"
             echo
         done
