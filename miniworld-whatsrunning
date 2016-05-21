@@ -1,11 +1,35 @@
 #!/bin/bash
 
+convertsecs() {
+ ((h=${1}/3600))
+ ((m=(${1}%3600)/60))
+ ((s=${1}%60))
+ printf "%02d:%02d:%02d\n" $h $m $s
+}
+
 print_scenario () {
     scenario=$(ps aux | grep "scenario miniworld" | grep -v grep | awk '{print $(NF)}' | tail -n1)
     if [ -z $scenario ]; then
-    	printf "\033[96mCurrent scenario: \033[91mnone\033[m\n"
+    	printf "\033[96mCurrent scenario: \t\033[91mnone\033[m\n"
     else
-    	printf "\033[96mCurrent scenario: \033[92m$(basename $scenario)\033[m\n"
+    	printf "\033[96mCurrent scenario: \t\033[92m$(basename $scenario)\033[m\n"
+    fi
+}
+
+print_runtime () {
+    scenario=$(ps aux | grep "scenario miniworld" | grep -v grep | awk '{print $(NF)}' | tail -n1)
+    if [ -z $scenario ]; then
+        printf "\033[96mCurrent runtime: \t\033[91mnnone\033[m\n"
+    else
+        datestring=$(echo ${scenario/*--/} | tr "_" " ")
+        date_date=$(echo $datestring | cut -d " " -f 1)
+        date_time=$(echo $datestring | cut -d " " -f 2 | tr "-" ":")
+        start_date="$date_date $date_time"
+        start_date_s=$(date +"%s" -d "$start_date")
+        now_date_s=$(date +"%s")
+        let DIFF=($now_date_s - $start_date_s)
+
+        printf "\033[96mCurrent runtime: \t\033[93m$(convertsecs $DIFF)\033[m\n"
     fi
 }
 
@@ -13,8 +37,10 @@ if [ "$1" == "-l" ]; then
     while true; do
         clear
         print_scenario
+	print_runtime
     	sleep 5
     done
 fi
 
 print_scenario
+print_runtime
