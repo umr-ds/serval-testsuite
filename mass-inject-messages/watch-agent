@@ -21,8 +21,7 @@ if [ -f /tmp/$HOSTNAME.active ]; then
 	exit 0
 fi
 
-while [ true ]; do    
-    sleep 15
+while [ true ]; do
     # returns 1 if script itself fails
     # returns 255 if ssh/vcmd session fails
 
@@ -52,5 +51,6 @@ while [ true ]; do
             echo "$HOSTNAME finished"
             exit 0
         fi
-
+    fi
+    sleep 15
 done
