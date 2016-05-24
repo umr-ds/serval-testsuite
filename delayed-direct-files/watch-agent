@@ -29,7 +29,7 @@ while [ true ]; do
 
     # Check if condition is reached
     if [ "$SCENARIO_LATER" -lt `date +%s` ]; then
-    	echo "Timout reached on $HOSTNAME"
+    	echo "Node $HOSTNAME finished."
     	exit 0
     fi
 

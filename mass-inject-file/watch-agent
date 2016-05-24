@@ -31,7 +31,8 @@ while [ true ]; do
 
     # Check if condition is reached
     if [ $(/serval-tests/rhizome-list-bundles-curl | /serval-tests/jsawk | grep '\["rows",[0-9]*\]' | grep -v 'MeshMS2' | wc -l) -eq $NUM ]; then
-        exit 0
+        echo "All files arrived on $HOSTNAME."
+	exit 0
     fi
 
     sleep 15

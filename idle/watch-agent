@@ -25,7 +25,8 @@ while [ true ]; do
 
     # Check if condition is reached
     if [ $(servald peer count) -eq `expr $TOTAL_NODES - 1` ]; then
-        exit 0
+        echo "All peers found. $HOSTNAME finished."
+	exit 0
     fi
 
     sleep 15

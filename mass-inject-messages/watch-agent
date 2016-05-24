@@ -48,7 +48,7 @@ while [ true ]; do
         if [ $(/serval-tests/meshms-list-mess-curl $SID $SENDER | /serval-tests/jsawk | grep '\["rows",[0-9]*\]' | wc -l) -ge $NUMBER_OF_MESSAGES ]; then
         # Check if node received the specified number of messages from the active node
             ## -eq SHOULD be perfectly fine in this if, in some cases messages are sent multiple times.
-            echo "$HOSTNAME finished"
+            echo "All messages arrived on $HOSTNAME."
             exit 0
         fi
     fi
