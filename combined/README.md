@@ -9,7 +9,7 @@ Initiates all scenarios. For more information see the README of the respective s
 
 ### Usage
 ```
-<timeout> (f1 | f2 | f3 | f4) (t <timeout> | f <file_count>) <salt>
+<timeout> (f1 | f2 | f3 | f4)
 ```
 
 # watch-agent
@@ -22,5 +22,4 @@ Waits, unitl all scenarios are finished. For the sake of convenience, this scrip
 
 ---
 
-**NOTE:** The first `<timeout>` parameter is for delayed messages and delayed directed files. The second `<timtout>`, that after the `t` is for delayed files.
-**NOTE:** The `<timeout>` for the watch-agent should be a lot higher than the timeouts in initiate, since the delayed files and mass injects can be very long.
+**NOTE:** The `<timeout>` for the watch-agent should be a lot higher than the timeout in initiate, since the delayed files and mass injects can be very long.
