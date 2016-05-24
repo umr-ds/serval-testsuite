@@ -6,12 +6,21 @@ HOSTNAME=`hostname`
 
 TOTAL_NODES="$1"
 TOTAL_ACTIVE_NODES="$2"
-NUM="$3"
+FILESET="$3"
+NUM=$4
 
 if [ -z $NUM ]; then
-  echo "Please provide number of expected files!"
+  echo "The parameters do not match."
   exit 1
 fi
+
+if [[ $FILESET = f4 ]]; then
+	NUM_FILES=9
+else
+	NUM_FILES=3
+fi
+
+NUM_TO_WAIT=$(( NUM_FILES * TOTAL_ACTIVE_NODES * NUM ))
 
 while [ true ]; do
     # returns 1 if script itself fails
@@ -30,7 +39,7 @@ while [ true ]; do
     #fi
 
     # Check if condition is reached
-    if [ $(/serval-tests/rhizome-list-bundles-curl | /serval-tests/jsawk | grep '\["rows",[0-9]*\]' | grep -v 'MeshMS2' | wc -l) -eq $NUM ]; then
+    if [ $(/serval-tests/rhizome-list-bundles-curl | /serval-tests/jsawk | grep '\["rows",[0-9]*\]' | grep -v 'MeshMS2' | wc -l) -eq $NUM_TO_WAIT ]; then
         echo "All files arrived on $HOSTNAME."
 	exit 0
     fi
