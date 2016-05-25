@@ -271,7 +271,7 @@ echo "`date_ms`, 5, watch-agent-start" >> $TIMING_FILE
 # using trap to kill running vcmds
 trap "kill $AGENTS 2> /dev/null; echo Killed agents; exit 130" SIGINT SIGTERM
 
-for NODE in `seq 0 $(($NODE_CNT - 1))`; do
+for NODE in $ALL_NODES; do
     exec $NODE "$SCENARIO_FOLDER/watch-agent $NODE_CNT $ACTIVE_NODE_CNT $WATCH_ARGS" &
     AGENTS="$AGENTS $!"
     printf .
