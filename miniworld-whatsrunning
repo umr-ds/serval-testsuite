@@ -19,7 +19,7 @@ print_scenario () {
 print_runtime () {
     scenario=$(ps aux | grep "scenario miniworld" | grep -v grep | awk '{print $(NF)}' | tail -n1)
     if [ -z $scenario ]; then
-        printf "\033[96mCurrent runtime: \t\033[91mnnone\033[m\n"
+        printf "\033[96mCurrent runtime: \t\033[91mnone\033[m\n"
     else
         datestring=$(echo ${scenario/*--/} | tr "_" " ")
         date_date=$(echo $datestring | cut -d " " -f 1)
@@ -29,7 +29,7 @@ print_runtime () {
         now_date_s=$(date +"%s")
         let DIFF=($now_date_s - $start_date_s)
 
-        printf "\033[96mCurrent runtime: \t\033[93m$(convertsecs $DIFF)\033[m\n"
+        printf "\033[96mCurrent runtime: \t\033[93m$(convertsecs $DIFF)\033[m"
     fi
 }
 
