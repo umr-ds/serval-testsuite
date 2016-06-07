@@ -20,7 +20,7 @@ def run_is_complete(run_folder):
 
   if len(os.listdir(run_folder)) <= 4:
     print colors.RED + run_folder + colors.END
-    print "Contains only " + str(len(os.listdir(run_folder))) + " elements"
+    print "Contains only " + str(len(os.listdir(run_folder))) + " elements: " + ", ".join(os.listdir(run_folder))
     result=False
   for dir in dirs:
     if not os.path.basename(os.path.normpath(dir)) in ["active", "err-log", "pidstat", "netmon"] and len(nodes) != len(os.listdir(dir)):
