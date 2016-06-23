@@ -23,7 +23,7 @@ def run_is_complete(run_folder):
     print "Contains only " + str(len(os.listdir(run_folder))) + " elements: " + ", ".join(os.listdir(run_folder))
     result=False
   for dir in dirs:
-    if not os.path.basename(os.path.normpath(dir)) in ["active", "err-log", "pidstat", "netmon"] and len(nodes) != len(os.listdir(dir)):
+    if not os.path.basename(os.path.normpath(dir)) in ["active", "err-log", "pidstat", "netmon"] and len(nodes) > len(os.listdir(dir)):
       if result:
         print colors.RED + run_folder + colors.END
       print "There are elements missing in " + dir + ": got " + str(len(os.listdir(dir))) + ", expected - " + str(len(nodes))
