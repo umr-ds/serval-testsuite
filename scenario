@@ -49,6 +49,20 @@ date_ms () { date +%s%3N; }
 TIMING_FILE=$LOCAL_LOG_FOLDER/timing.csv
 echo "timestamp_ms, phase, name" >> $TIMING_FILE
 
+scp_from_nodes () {
+    PIDS=""
+    FAIL="0"
+    for NODE in ${NODES[@]}; do
+        scp -q -r $SSH_OPTIONS $NODE:$LOG_FOLDER/*/* $LOCAL_LOG_FOLDER &
+        PIDS="$PIDS $!"
+    done
+    for PID in $PIDS; do
+        wait $PID || let "FAIL=$?"
+        printf .
+    done
+    echo
+}
+
 SEVERAL_ALL_SIDS_FILE="/tmp/serval-all-sids"
 rm -f $SEVERAL_ALL_SIDS_FILE
 
@@ -314,19 +328,16 @@ if [ "$TYPE" == "core" ]; then
     
 elif [ "$TYPE" == "miniworld" ]; then
     echo -n "getting data using scp"
-
-    PIDS=""
-    FAIL="0"
-    for NODE in ${NODES[@]}; do
-        scp -q -r $SSH_OPTIONS $NODE:$LOG_FOLDER/*/* $LOCAL_LOG_FOLDER &
-        PIDS="$PIDS $!"
-    done
-    for PID in $PIDS; do
-        wait $PID || let "FAIL=$?"
-        printf .
-        if [ "$FAIL" != "0" ]; then echo -e "\e[1;31mPID $PID failed with $FAIL, aborting scenario.\e[0m"; exit $PHASE; fi
-    done
-    echo
+    
+    scp_from_nodes
+    if [ "$FAIL" != "0" ]; then
+        echo -e "\e[1;31mPID $PID failed with $FAIL, sleeping 5 seconds and trying again.\e[0m";
+        sleep 5
+        scp_from_nodes
+        if [ "$FAIL" != "0" ]; then
+            echo -e "\e[1;31mPID $PID failed with $FAIL, aborting.\e[0m"; exit $PHASE;
+        fi
+    fi
     
     mkdir -p $LOCAL_LOG_FOLDER/netmon
     mv /tmp/netmon*.csv $LOCAL_LOG_FOLDER/netmon
