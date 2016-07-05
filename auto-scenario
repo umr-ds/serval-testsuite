@@ -64,6 +64,7 @@ finalize_miniworld_topology () {
     #(cd /root/miniworld/MiniWorld && python miniworld/rpc/RPCStopScenario.py)
     #return $?
 }
+trap 'echo "Stopping"' SIGINT
 
 beautify_params () {
     for param in "$@"; do
