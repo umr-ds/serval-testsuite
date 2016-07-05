@@ -217,7 +217,7 @@ exec_seq "$ACTIVE_NODES" "$SCENARIO_FOLDER/prepare $NODE_CNT $ACTIVE_NODE_CNT $P
 export PHASE=12
 echo -n -e "\e[1;34mPhase 2 - Syncing qemu clocks\e[0m"
 echo "`date_ms`, 2, system-monitoring" >> $TIMING_FILE
-exec_par "$ALL_NODES" '/etc/init.d/sysntpd stop; killall ntpd ; mkdir -p /tmp/serval-monitor/ntp/ntp-log/; ntpdate 172.21.254.1 > /dev/null; ntpd -c /etc/ntp.conf -q > /dev/null; cp /tmp/ntp.log /tmp/serval-monitor/ntp/ntp-log/ntp_`hostname`.log'
+exec_par "$ALL_NODES" '/etc/init.d/sysntpd stop; killall ntpd ; mkdir -p /tmp/serval-monitor/ntp/ntp-log/; ntpd -c /etc/ntp.conf -q > /dev/null ; cp /tmp/ntp.log /tmp/serval-monitor/ntp/ntp-log/ntp_`hostname`.log'
 
 echo -n -e "\e[1;34m        - Starting system monitoring\e[0m"
 exec_par "$ALL_NODES" "/serval-tests/monitor system"
